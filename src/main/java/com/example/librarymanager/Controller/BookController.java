@@ -4,9 +4,6 @@ import com.example.librarymanager.Commons.ApiResponse;
 import com.example.librarymanager.DTOs.ApiReponse;
 import com.example.librarymanager.DTOs.BookData;
 import com.example.librarymanager.Services.BookService;
-
-import io.jsonwebtoken.Jwts;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +37,11 @@ public class BookController {
         }
     }
 
+    @PostMapping("/test")
+    public String test(@RequestBody String test) {
+        return test.toUpperCase();
+    }
+
     @PutMapping("/book")
     public ApiReponse updateBook(@RequestBody BookData book) {
         try {
@@ -53,6 +55,18 @@ public class BookController {
     public ApiReponse deleteBook(@RequestParam Long id) {
         try {
             return ApiResponse.response(service.deleteBook(id), "Success!");
+        } catch (Exception e) {
+            return ApiResponse.response(null, e.getMessage());
+        }
+    }
+
+    @GetMapping("/search")
+    public ApiReponse searchBook(
+            @RequestParam(value = "book", required = false) String book,
+            @RequestParam(value = "author", required = false) String author,
+            @RequestParam(value = "authorId", required = false) Long authorId) {
+        try {
+            return ApiResponse.response(service.getBookBySearching(book, author, authorId), "Success!");
         } catch (Exception e) {
             return ApiResponse.response(null, e.getMessage());
         }

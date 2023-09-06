@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -19,35 +19,50 @@ import java.io.IOException;
 @Service
 @Slf4j
 public class JwtAuthenFilter extends OncePerRequestFilter {
-    @Autowired
-    private JwtTokenProvider tokenProvider;
+
+    private final JwtTokenProvider tokenProvider;
+    private final UserService userService;
 
     @Autowired
-    private UserService userService;
+    public JwtAuthenFilter(JwtTokenProvider tokenProvider, UserService userService) {
+        this.tokenProvider = tokenProvider;
+        this.userService = userService;
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        return request.getRequestURI().startsWith("/login");
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+
         try {
-
             String jwt = getJwtFromRequest(request);
-
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-
-                Long userId = tokenProvider.getUserIdFromJwt(jwt);
-
-                UserDetail user = userService.loadUserById(userId);
-                if(user != null) {
-                    UsernamePasswordAuthenticationToken
-                            authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+            Long userId = tokenProvider.getUserIdFromJwt(jwt);
+            UserDetail user = userService.loadUserById(userId);
+            if (user != null) {
+                UsernamePasswordAuthenticationToken
+                        authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                if (!user.getUser().getIsAdmin() && !isUserAPI(request)) {
+                    SecurityContextHolder.getContext().setAuthentication(null);
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access Denied");
+                    return;
                 }
+            } else {
+                SecurityContextHolder.getContext().setAuthentication(null);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                return;
             }
+
         } catch (Exception ex) {
             log.error("failed on set user authentication", ex);
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+            return;
         }
-
         filterChain.doFilter(request, response);
     }
 
@@ -59,4 +74,8 @@ public class JwtAuthenFilter extends OncePerRequestFilter {
         return null;
     }
 
+    private Boolean isUserAPI(HttpServletRequest request) {
+        String method = request.getMethod();
+        return "GET".equals(method);
+    }
 }

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 public interface BookService {
 
-    ArrayList<BookEntity> getAllBooks();
+    ArrayList<BookData> getAllBooks();
 
     BookData addBook(BookData book) throws Exception;
 
@@ -17,4 +17,6 @@ public interface BookService {
     String deleteBook(Long id) throws Exception;
 
     BookData getBookById(Long id) throws Exception;
+
+    ArrayList<Object> getBookBySearching(String book, String author, Long authorId) throws Exception;
 }
