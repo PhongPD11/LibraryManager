@@ -2,22 +2,19 @@ package com.example.librarymanager.Entity;
 
 import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
 
 @Entity
-@Setter
 @Getter
-@Table(name = "book")
+@Setter
 @Data
-public class BookEntity {
+@Table(name = "author_book")
+public class AuthorBookEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
     private Long bookId;
-    private Long amount;
-    private String type;
+    private Long authorId;
 }

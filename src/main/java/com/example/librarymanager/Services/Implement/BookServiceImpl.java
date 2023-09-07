@@ -1,20 +1,23 @@
 package com.example.librarymanager.Services.Implement;
 
-import com.example.librarymanager.Commons.BookExist;
+import com.example.librarymanager.Commons.BookCommons;
 import com.example.librarymanager.Commons.Commons;
+import com.example.librarymanager.DTOs.Book;
 import com.example.librarymanager.DTOs.BookData;
-import com.example.librarymanager.Entity.AuthorEntity;
+import com.example.librarymanager.Entity.AuthorBookEntity;
 import com.example.librarymanager.Entity.BookEntity;
+import com.example.librarymanager.Repository.AuthorBookRepository;
 import com.example.librarymanager.Repository.AuthorRepository;
 import com.example.librarymanager.Repository.BookRepository;
 import com.example.librarymanager.Services.BookService;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.apache.commons.lang3.StringUtils;
 
-import javax.persistence.EntityManager;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -27,60 +30,67 @@ public class BookServiceImpl implements BookService {
     AuthorRepository authorRepository;
 
     @Autowired
-    private EntityManager entityManager;
-
+    AuthorBookRepository authorBookRepository;
 
     @Override
-    public ArrayList<BookData> getAllBooks() {
-        return new ArrayList<>(listOfBooks((ArrayList<BookEntity>) bookRepository.findAll()));
+    public ArrayList<Book> getAllBooks() {
+        List<BookEntity> listOfBook = bookRepository.findAll();
+        return BookCommons.showBooksInfo(listOfBook, authorBookRepository, authorRepository);
     }
 
     @Override
     public BookData addBook(BookData book) throws Exception {
         BookEntity saveBook = new BookEntity();
-        AuthorEntity saveAuthor = new AuthorEntity();
-        if (book.getName().isEmpty() || book.getAmount() == null || book.getAuthor().isEmpty() || book.getAuthorId() == null) {
-            throw new Exception("Please fill Name, Amount, Author & Author ID!");
+        if (StringUtils.isBlank(book.getName()) || book.getBookId() == null || StringUtils.isBlank(book.getType()) || book.getAmount() == null || ObjectUtils.isEmpty(book.getAuthor())) {
+            throw new Exception("Please fill all information!");
         } else {
-            saveBook.setName(book.getName());
-            saveBook.setType(book.getType());
-            saveBook.setAmount(book.getAmount());
-            saveBook.setAuthorId(book.getAuthorId());
-            Optional<AuthorEntity> authorExist = Optional.ofNullable(authorRepository.findByAuthorId(book.getAuthorId()));
-            if (!authorExist.isPresent()) {
-                saveAuthor.setAuthorId(book.getAuthorId());
-                saveAuthor.setAuthorName(book.getAuthor());
-                authorRepository.save(saveAuthor);
-            } else if (!Objects.equals(authorExist.get().getAuthorName(), book.getAuthor())) {
-                throw new Exception("Add book failure. Author & Author Id invalid!");
-            } else if (BookExist.isBookExist(book.getName(), book.getAuthorId(), bookRepository)) {
-                throw new Exception("Add book failure. That book exist!");
-            }
+            if (bookRepository.findById(book.getBookId()).isPresent()) {
+                throw new Exception("Book exist!");
+            } else {
+                saveBook.setName(book.getName());
+                saveBook.setType(book.getType());
+                saveBook.setBookId(book.getBookId());
+                saveBook.setAmount(book.getAmount());
 
-            saveBook = bookRepository.save(saveBook);
-            book.setId(saveBook.getId());
-            return book;
+                BookCommons.saveAuthorBook(book.getAuthor(), book.getBookId(), authorBookRepository, authorRepository);
+
+                saveBook = bookRepository.save(saveBook);
+                book.setId(saveBook.getId());
+                return book;
+            }
         }
     }
 
+
     @Override
     public BookData updateBook(BookData book) throws Exception {
-        AuthorEntity saveAuthor = new AuthorEntity();
         Long id = book.getId();
         if (id != null) {
             if (bookRepository.findById(id).isPresent()) {
                 BookEntity existBook = bookRepository.findById(id).get();
+                Long bookIdExist = existBook.getBookId();
                 String name = book.getName();
-                String author = book.getAuthor();
-                Long authorId = book.getAuthorId();
                 Long amount = book.getAmount();
                 String type = book.getType();
-                if (name.isEmpty()) {
+
+                if (book.getBookId() != null && !book.getBookId().equals(existBook.getBookId())) {
+                    Long bookId = book.getBookId();
+                    Optional<BookEntity> checkBook = Optional.ofNullable(bookRepository.findByBookId(bookId));
+                    if (checkBook.isPresent()) {
+                        throw new Exception("Book Id: " + bookId + "is owned by another book!");
+                    } else {
+                        existBook.setBookId(bookId);
+                    }
+                } else {
+                    book.setBookId(existBook.getBookId());
+                }
+
+                if (StringUtils.isBlank(name)) {
                     book.setName(existBook.getName());
                 } else {
                     existBook.setName(name);
                 }
-                if (type.isEmpty()) {
+                if (StringUtils.isBlank(type)) {
                     book.setType(existBook.getType());
                 } else {
                     existBook.setType(type);
@@ -90,53 +100,21 @@ public class BookServiceImpl implements BookService {
                 } else {
                     existBook.setAmount(amount);
                 }
-
-                if (authorId == null) {
-                    if (author.isEmpty()) {
-                        book.setAuthorId(existBook.getAuthorId());
-                        Optional<AuthorEntity> authorExist = Optional.ofNullable(authorRepository.findByAuthorId(existBook.getAuthorId()));
-                        authorExist.ifPresent(authorEntity -> book.setAuthor(authorEntity.getAuthorName()));
-                    } else {
-                        throw new Exception("You must fill Author Id to change Author Name!");
-                    }
-                } else {
-                    Optional<AuthorEntity> existAuthor = Optional.ofNullable(authorRepository.findByAuthorId(authorId));
-                    if (existAuthor.isPresent()) {
-                        if (!author.isEmpty()) {
-                            if (BookExist.isExistAuthor(authorId, authorRepository)) {
-                                existAuthor.get().setAuthorName(author);
-                                existBook.setAuthorId(authorId);
-                            }
-                        } else {
-                            book.setAuthor(existAuthor.get().getAuthorName());
-                            existBook.setAuthorId(authorId);
-                        }
-                    } else {
-                        if (author.isEmpty()) {
-                            throw new Exception("You must fill Author Name to add new Author");
-                        } else {
-                            saveAuthor.setAuthorId(authorId);
-                            saveAuthor.setAuthorName(author);
-                            existBook.setAuthorId(authorId);
-                            authorRepository.save(saveAuthor);
-                        }
-                    }
-                }
-                if (BookExist.isBookDuplicate(existBook.getName(), existBook.getAuthorId(), book.getId(), bookRepository)) {
-                    throw new Exception("Update book failure. That book is duplicated!");
-                } else {
-                    bookRepository.save(existBook);
-                    return book;
-                }
+                BookCommons.updateAuthorBook(authorBookRepository.findByBookId(bookIdExist), book.getAuthor(), book.getBookId(), authorBookRepository, authorRepository);
+                bookRepository.save(existBook);
+                return book;
             } else throw new Exception("Book not found!");
-        } else throw new Exception("You must fill ID to update book!");
+        } else throw new Exception("Fill Book Id!");
+
     }
 
     @Override
-    public String deleteBook(Long id) throws Exception {
-        if (id != null) {
-            if (bookRepository.findById(id).isPresent()) {
-                BookEntity existBook = bookRepository.findById(id).get();
+    public String deleteBook(Long bookId) throws Exception {
+        if (bookId != null) {
+            Optional<BookEntity> checkBook = Optional.ofNullable(bookRepository.findByBookId(bookId));
+            if (checkBook.isPresent()) {
+                BookEntity existBook = checkBook.get();
+                authorBookRepository.deleteAll(authorBookRepository.findByBookId(bookId));
                 bookRepository.delete(existBook);
                 return "Success delete " + existBook.getName();
             } else throw new Exception("Book not found!");
@@ -144,71 +122,43 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public BookData getBookById(Long id) throws Exception {
-        if (id != null) {
-            if (bookRepository.findById(id).isPresent()) {
-                BookEntity existBook = bookRepository.findById(id).get();
-                BookData book = new BookData();
-                book.setId(id);
-                book.setName(existBook.getName());
-                book.setType(existBook.getType());
-                book.setAmount(existBook.getAmount());
-                book.setAuthorId(existBook.getAuthorId());
-                Optional<AuthorEntity> existAuthor = Optional.ofNullable(authorRepository.findByAuthorId(book.getAuthorId()));
-                existAuthor.ifPresent(authorEntity -> book.setAuthor(authorEntity.getAuthorName()));
-                return book;
-            } else throw new Exception("Book not found!");
-        } else throw new Exception("You must fill ID to find that book!");
+    public ArrayList<Book> getBookByAuthorId(Long authorId) throws Exception {
+        if (authorId == null){
+            throw new Exception("Fill author ID!");
+        } else {
+            List<AuthorBookEntity> listBooks = authorBookRepository.findByAuthorId(authorId);
+            if (listBooks.isEmpty()) {
+                throw new Exception("Result not found!");
+            } else {
+                ArrayList<BookEntity> listBooksEnt = new ArrayList<>();
+                for (AuthorBookEntity book : listBooks){
+                    listBooksEnt.add(bookRepository.findByBookId(book.getBookId()));
+                }
+                return BookCommons.showBooksInfo(listBooksEnt, authorBookRepository, authorRepository);
+            }
+        }
     }
 
     @Override
-    public ArrayList<Object> getBookBySearching(String book, String author, Long authorId) throws Exception {
-        ArrayList<Object> finalResults = new ArrayList<Object>();
-        if ( (Commons.isNullOrEmpty(book)) && (Commons.isNullOrEmpty(author)) && authorId == null) {
+    public ArrayList<Object> getBookBySearching(String book, String author, Long bookId) throws Exception {
+        ArrayList<Object> finalResults = new ArrayList<>();
+        if ( StringUtils.isBlank(book) && StringUtils.isBlank(author) && bookId == null) {
             throw new Exception("Input keyword!");
         } else {
-            if (authorId != null)
-                finalResults.add(authorRepository.findByAuthorId(authorId));
-            else if (!Commons.isNullOrEmpty(author))
-                finalResults.addAll(searchAuthorsLikeKeyword(author.toLowerCase()));
-            if (!Commons.isNullOrEmpty(book))
-                finalResults.addAll(listOfBooks((ArrayList<BookEntity>) searchBooksLikeKeyword(book.toLowerCase())));
+            if (bookId != null)
+                finalResults.add(BookCommons.showBookInfo(bookRepository.findByBookId(bookId), authorBookRepository, authorRepository));
+            else if (!Commons.isNullOrEmpty(book)){
+                book = book.toLowerCase().trim();
+                finalResults.addAll(BookCommons.showBooksInfo(bookRepository.findByNameIgnoreCaseStartsWith(book), authorBookRepository, authorRepository));
+                finalResults.addAll(BookCommons.showBooksInfo(bookRepository.findByNameIgnoreCaseContaining(" "+book), authorBookRepository, authorRepository));
+            }
+            if (!Commons.isNullOrEmpty(author)){
+                author = author.toLowerCase().trim();
+                finalResults.addAll(BookCommons.showAuthors(authorRepository.findByAuthorNameIgnoreCaseContaining(" "+author)));
+                finalResults.addAll(BookCommons.showAuthors(authorRepository.findByAuthorNameIgnoreCaseStartsWith(author)));
+            }
         }
-        if (finalResults.isEmpty()) throw new Exception("No results found!");
-        else return finalResults;
+        return finalResults;
     }
 
-    public List<BookEntity> searchBooksLikeKeyword(String keyword) {
-        String query = "SELECT b FROM BookEntity b WHERE LOWER(b.name) LIKE :keyword OR LOWER(b.name) LIKE CONCAT('% ', :keyword)";
-        return entityManager.createQuery(query, BookEntity.class)
-                .setParameter("keyword", keyword + "%")
-                .getResultList();
-    }
-
-    public List<AuthorEntity> searchAuthorsLikeKeyword(String keyword) {
-        String query = "SELECT b FROM AuthorEntity b WHERE LOWER(b.authorName) LIKE :keyword OR LOWER(b.authorName) LIKE CONCAT('% ', :keyword)";
-        return entityManager.createQuery(query, AuthorEntity.class)
-                .setParameter("keyword", keyword + "%")
-                .getResultList();
-    }
-
-    private ArrayList<BookData> listOfBooks(ArrayList<BookEntity> books) {
-        ArrayList<BookData> list = new ArrayList<>();
-        for (BookEntity book : books) {
-            list.add(bookEntityToData(book));
-        }
-        return list;
-    }
-
-    private BookData bookEntityToData(BookEntity book) {
-        BookData data = new BookData();
-        data.setId(book.getId());
-        data.setName(book.getName());
-        data.setType(book.getType());
-        data.setAmount(book.getAmount());
-        data.setAuthorId(book.getAuthorId());
-        Optional<AuthorEntity> existAuthor = Optional.ofNullable(authorRepository.findByAuthorId(book.getAuthorId()));
-        existAuthor.ifPresent(authorEntity -> data.setAuthor(authorEntity.getAuthorName()));
-        return data;
-    }
 }

@@ -1,9 +1,9 @@
 package com.example.librarymanager.Commons;
 
-import org.hibernate.mapping.Any;
-
 public class Commons {
-    public static Boolean isNullOrEmpty(String object){
-        return object == null || object.isEmpty();
+    public static Boolean isNullOrEmpty(String object) {
+        if (object == null) {
+            return true;
+        } else return object.isEmpty() || object.trim().isEmpty();
     }
 }

@@ -19,15 +19,6 @@ public class BookController {
         return ApiResponse.response(service.getAllBooks(), "Success!");
     }
 
-    @GetMapping("/book")
-    public ApiReponse getBookById(@RequestParam Long id) {
-        try {
-            return ApiResponse.response(service.getBookById(id), "Success!");
-        } catch (Exception e) {
-            return ApiResponse.response(null, e.getMessage());
-        }
-    }
-
     @PostMapping("/book")
     public ApiReponse addBook(@RequestBody BookData book) {
         try {
@@ -35,11 +26,6 @@ public class BookController {
         } catch (Exception e) {
             return ApiResponse.response(null, e.getMessage());
         }
-    }
-
-    @PostMapping("/test")
-    public String test(@RequestBody String test) {
-        return test.toUpperCase();
     }
 
     @PutMapping("/book")
@@ -52,9 +38,9 @@ public class BookController {
     }
 
     @DeleteMapping("/delete")
-    public ApiReponse deleteBook(@RequestParam Long id) {
+    public ApiReponse deleteBook(@RequestParam Long bookId) {
         try {
-            return ApiResponse.response(service.deleteBook(id), "Success!");
+            return ApiResponse.response(service.deleteBook(bookId), "Success!");
         } catch (Exception e) {
             return ApiResponse.response(null, e.getMessage());
         }
@@ -64,9 +50,18 @@ public class BookController {
     public ApiReponse searchBook(
             @RequestParam(value = "book", required = false) String book,
             @RequestParam(value = "author", required = false) String author,
-            @RequestParam(value = "authorId", required = false) Long authorId) {
+            @RequestParam(value = "bookId", required = false) Long bookId) {
         try {
-            return ApiResponse.response(service.getBookBySearching(book, author, authorId), "Success!");
+            return ApiResponse.response(service.getBookBySearching(book, author, bookId), "Success!");
+        } catch (Exception e) {
+            return ApiResponse.response(null, e.getMessage());
+        }
+    }
+
+    @GetMapping("/books/author")
+    public ApiReponse getAllBooks(@RequestParam(value = "authorId") Long authorId) {
+        try {
+            return ApiResponse.response(service.getBookByAuthorId(authorId), "Success!");
         } catch (Exception e) {
             return ApiResponse.response(null, e.getMessage());
         }
