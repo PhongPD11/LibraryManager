@@ -56,6 +56,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .cors()
                 .and().authorizeRequests()
                 .antMatchers("/login/**").permitAll()
+                .antMatchers("/library/test").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(customFilter, UsernamePasswordAuthenticationFilter.class)

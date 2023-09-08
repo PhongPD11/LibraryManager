@@ -5,7 +5,10 @@ import com.example.librarymanager.DTOs.ApiReponse;
 import com.example.librarymanager.DTOs.BookData;
 import com.example.librarymanager.Services.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @RestController
 @RequestMapping("/library")
@@ -65,6 +68,11 @@ public class BookController {
         } catch (Exception e) {
             return ApiResponse.response(null, e.getMessage());
         }
+    }
+
+    @GetMapping("/test")
+    public String Test(){
+        return "Update!";
     }
 
 }

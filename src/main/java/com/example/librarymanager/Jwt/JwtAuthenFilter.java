@@ -31,7 +31,7 @@ public class JwtAuthenFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        return request.getRequestURI().startsWith("/login");
+        return request.getRequestURI().startsWith("/login") || request.getRequestURI().startsWith("/library/test");
     }
 
     @Override

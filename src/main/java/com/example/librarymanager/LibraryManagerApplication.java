@@ -1,41 +1,36 @@
 package com.example.librarymanager;
 
+import ch.qos.logback.core.net.SyslogOutputStream;
 import com.example.librarymanager.Entity.UserEntity;
+import com.example.librarymanager.Repository.BookRepository;
 import com.example.librarymanager.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.io.IOException;
+
 @SpringBootApplication
+@EnableScheduling
 public class LibraryManagerApplication
 //        implements CommandLineRunner
 {
-//
-//    @Autowired
-//    UserRepository userRepository;
-//    @Autowired
-//    PasswordEncoder passwordEncoder;
+    @Autowired
+    UserRepository userRepository;
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         SpringApplication.run(LibraryManagerApplication.class, args);
     }
 
-//    @Override
-//    public void run(String... args) throws Exception {
-//        UserEntity admin = new UserEntity();
-//        UserEntity user = new UserEntity();
-//
-//        admin.setUserName("admin");
-//        admin.setPassword(passwordEncoder.encode("phong"));
-//        admin.setIsAdmin(true);
-//        userRepository.save(admin);
-//
-//        user.setUserName("user");
-//        user.setPassword(passwordEncoder.encode("phong"));
-//        user.setIsAdmin(false);
-//        userRepository.save(user);
-//
-//    }
+    @Scheduled(cron = "0 * * * * ?")
+    public void cronJobSch() throws Exception {
+    }
+
 }
+
