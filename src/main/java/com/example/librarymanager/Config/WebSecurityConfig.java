@@ -1,5 +1,7 @@
-package com.example.librarymanager.Jwt;
+package com.example.librarymanager.Config;
 
+import com.example.librarymanager.Jwt.JwtAuthenFilter;
+import com.example.librarymanager.Jwt.JwtTokenProvider;
 import com.example.librarymanager.Services.Implement.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -55,8 +57,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable()
                 .cors()
                 .and().authorizeRequests()
+                .antMatchers("/").permitAll()
+                .antMatchers("/ws/**").permitAll()
                 .antMatchers("/login/**").permitAll()
                 .antMatchers("/library/test").permitAll()
+                .antMatchers("/app/**").permitAll()
+                .antMatchers("/topic/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(customFilter, UsernamePasswordAuthenticationFilter.class)

@@ -10,19 +10,26 @@ import org.springframework.stereotype.Component;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.Random;
 
 @Component
 public class Schedule {
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    BookRepository bookRepository;
+
     @Scheduled(cron = "0 * * * * ?")
     public void cronJobSch() {
-
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         Date now = new Date();
         String strDate = sdf.format(now);
-        UserEntity user = userRepository.findById(2L).get();
-        System.out.println(strDate + "-- Book: " + user.getUserName());
+        List<BookEntity> books = bookRepository.findAll();
+        Random rand = new Random();
+        int random = rand.nextInt(4);
+        System.out.println(strDate + "-- Book: " + books.get(random).getName());
     }
 
 }
