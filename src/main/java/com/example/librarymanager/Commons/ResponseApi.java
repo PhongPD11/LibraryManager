@@ -1,10 +1,10 @@
 package com.example.librarymanager.Commons;
 
-import com.example.librarymanager.DTOs.ApiReponse;
+import com.example.librarymanager.DTOs.ApiResponse;
 
-public class ApiResponse {
-    public static ApiReponse response(Object data, String message) {
-        ApiReponse response = new ApiReponse();
+public class ResponseApi {
+    public static ApiResponse response(Object data, String message) {
+        ApiResponse response = new ApiResponse();
         if (data != null) {
             response.setCode(200);
         } else {

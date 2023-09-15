@@ -1,7 +1,7 @@
 package com.example.librarymanager.Controller;
 
-import com.example.librarymanager.Commons.ApiResponse;
-import com.example.librarymanager.DTOs.ApiReponse;
+import com.example.librarymanager.Commons.ResponseApi;
+import com.example.librarymanager.DTOs.ApiResponse;
 import com.example.librarymanager.DTOs.Login;
 import com.example.librarymanager.Services.Implement.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +18,11 @@ public class UserController {
     UserServiceImpl service;
 
     @PostMapping("/login")
-    public ApiReponse authenticateUser(@RequestBody Login login) {
+    public ApiResponse authenticateUser(@RequestBody Login login) {
         try {
-            return ApiResponse.response(service.login(login), "Success");
+            return ResponseApi.response(service.login(login), "Success");
         } catch (Exception e) {
-            return ApiResponse.response(null, e.getMessage());
+            return ResponseApi.response(null, e.getMessage());
         }
     }
 }
