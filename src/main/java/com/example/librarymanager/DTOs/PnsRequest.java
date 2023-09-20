@@ -5,8 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ApiReponse {
-    private int code;
-    private Object data;
+public class PnsRequest {
+    private String fcmToken;
     private String message;
+    private String title;
 }
