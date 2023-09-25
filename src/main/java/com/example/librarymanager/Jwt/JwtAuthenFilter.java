@@ -14,6 +14,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -30,8 +31,8 @@ public class JwtAuthenFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        return request.getRequestURI().startsWith("/login") || request.getRequestURI().startsWith("/library/test")
-        || request.getRequestURI().startsWith("/notification");
+        String requestURI = request.getRequestURI();
+        return nonAuthenUrl(requestURI);
     }
 
     @Override
@@ -77,5 +78,15 @@ public class JwtAuthenFilter extends OncePerRequestFilter {
     private Boolean isUserAPI(HttpServletRequest request) {
         String method = request.getMethod();
         return "GET".equals(method);
+    }
+
+    private Boolean nonAuthenUrl(String uri) {
+        List<String> urls = List.of("/login", "/register", "/library/test", "/change-device", "/notification", "/verify", "/email");
+        for (String path : urls) {
+            if (uri.startsWith(path)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

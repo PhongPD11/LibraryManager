@@ -15,7 +15,16 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String userName;
+    //profile
+    private Long uid;
+    private String username;
     private String password;
+    private String email;
+    //role
     private Boolean isAdmin;
+    //device
+    private String fcm;
+    //verify
+    private Boolean isEnabled;
+    private Long activeCode;
 }

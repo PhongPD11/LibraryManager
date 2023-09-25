@@ -51,11 +51,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        JwtAuthenFilter customFilter = new JwtAuthenFilter(tokenProvider,userService);
+        JwtAuthenFilter customFilter = new JwtAuthenFilter(tokenProvider, userService);
         http.csrf().disable()
                 .cors()
                 .and().authorizeRequests()
-                .antMatchers("/login/**").permitAll()
+                .antMatchers("/login", "/register", "/change-device", "/verify", "/email").permitAll()
                 .antMatchers("/library/test", "/notification").permitAll()
                 .anyRequest().authenticated()
                 .and()

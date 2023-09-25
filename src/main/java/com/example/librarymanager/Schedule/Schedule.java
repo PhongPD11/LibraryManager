@@ -1,8 +1,6 @@
 package com.example.librarymanager.Schedule;
 
-import com.example.librarymanager.Entity.BookEntity;
 import com.example.librarymanager.Entity.UserEntity;
-import com.example.librarymanager.Repository.BookRepository;
 import com.example.librarymanager.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -22,7 +20,7 @@ public class Schedule {
         Date now = new Date();
         String strDate = sdf.format(now);
         UserEntity user = userRepository.findById(2L).get();
-        System.out.println(strDate + "-- Book: " + user.getUserName());
+        System.out.println(strDate + "-- Book: " + user.getUsername());
     }
 
 }
