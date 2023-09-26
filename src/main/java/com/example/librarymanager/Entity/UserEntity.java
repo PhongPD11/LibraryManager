@@ -17,9 +17,13 @@ public class UserEntity {
     private Long id;
     //profile
     private Long uid;
+    private String fullName;
+    private String email;
+    private String classId;
+    private String major;
+    //account
     private String username;
     private String password;
-    private String email;
     //role
     private Boolean isAdmin;
     //device
