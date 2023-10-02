@@ -19,7 +19,7 @@ public class UserEntity {
     private Long uid;
     private String fullName;
     private String email;
-    private String classId;
+    private Long classId;
     private String major;
     //account
     private String username;

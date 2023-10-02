@@ -81,7 +81,11 @@ public class JwtAuthenFilter extends OncePerRequestFilter {
     }
 
     private Boolean nonAuthenUrl(String uri) {
-        List<String> urls = List.of("/login", "/register", "/library/test", "/change-device", "/notification", "/verify", "/email");
+        List<String> urls = List.of(
+                "/login", "/register", "/library/test", "/change-device",
+                "/notification", "/verify", "/email", "/books","/books/author",
+                "/profile"
+        );
         for (String path : urls) {
             if (uri.startsWith(path)) {
                 return true;

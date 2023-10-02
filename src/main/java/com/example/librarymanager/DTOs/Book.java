@@ -10,7 +10,7 @@ import java.util.List;
 public class Book{
     private Long bookId;
     private String name;
-    private String type;
     private Long amount;
     private List<String> author;
+    private List<String> type;
 }

@@ -2,6 +2,7 @@ package com.example.librarymanager.Services.Implement;
 
 import com.example.librarymanager.Commons.Commons;
 import com.example.librarymanager.DTOs.Login;
+import com.example.librarymanager.DTOs.Profile;
 import com.example.librarymanager.DTOs.Register;
 import com.example.librarymanager.Entity.UserEntity;
 import com.example.librarymanager.Jwt.JwtTokenProvider;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
+
+import static com.example.librarymanager.Commons.Commons.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -40,13 +43,12 @@ public class UserServiceImpl implements UserService {
     JavaMailSender mailSender;
 
     @Override
-    public String login(Login login) throws Exception {
+    public Profile login(Login login) throws Exception {
         if (login.getUsername().isEmpty() || login.getPassword().isEmpty()){
             throw new Exception("Fill your Username & Password!");
         } else {
             UserEntity user = userRepository.findByUsername(login.getUsername());
             if (user != null){
-                try {
                     if (user.getIsEnabled()) {
                         Authentication authentication = authenticationManager.authenticate(
                                 new UsernamePasswordAuthenticationToken(
@@ -54,15 +56,22 @@ public class UserServiceImpl implements UserService {
                                         login.getPassword()
                                 )
                         );
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
-                        user.setFcm(login.getFcm());
-                        userRepository.save(user);
-                        return tokenProvider.generateToken(((UserDetail) authentication.getPrincipal()).getUser());
-                    } else return "User is not verify.";
-                } catch (Exception e){
-                    throw new Exception("Wrong password!");
-                }
-            } else throw new Exception("User not found!");
+                        if (authentication.isAuthenticated()) {
+                            SecurityContextHolder.getContext().setAuthentication(authentication);
+                            user.setFcm(login.getFcm());
+                            userRepository.save(user);
+                            String authenToken = tokenProvider.generateToken(((UserDetail) authentication.getPrincipal()).getUser());
+                            Profile profile = new Profile();
+                            profile.setToken(authenToken);
+                            profile.setUid(user.getUid());
+                            profile.setMajor(user.getMajor());
+                            profile.setEmail(user.getEmail());
+                            profile.setClassId(user.getClassId());
+                            profile.setFullName(user.getFullName());
+                            return profile;
+                        } else throw new Exception(INVALID_PASSWORD);
+                    } else throw new Exception("User is not verify.");
+            } else throw new Exception(USER_NOT_FOUND);
         }
     }
 
@@ -107,9 +116,41 @@ public class UserServiceImpl implements UserService {
             UserEntity existUser = userRepository.findByUid(uid);
             if (existUser != null && StringUtils.isNotBlank(fcm)) {
                 existUser.setFcm(fcm);
-                return "Success!";
+                return SUCCESS;
             } else throw new Exception("FCM is empty or User doesn't exist");
-        } else throw new Exception("UID is null!");
+        } else throw new Exception(UID_NULL);
     }
 
+    @Override
+    public Profile getProfile(Long uid) throws Exception {
+        if (uid != null){
+            UserEntity user = userRepository.findByUid(uid);
+            if (user != null){
+                Profile profile = new Profile();
+                profile.setUid(user.getUid());
+                profile.setMajor(user.getMajor());
+                profile.setEmail(user.getEmail());
+                profile.setClassId(user.getClassId());
+                profile.setFullName(user.getFullName());
+                return profile;
+            } else throw new Exception(USER_NOT_FOUND);
+        } else throw new Exception(USER_NOT_FOUND);
+    }
+
+    @Override
+    public String editProfile(Profile profile) throws Exception {
+        if (profile.getUid() != null) {
+            UserEntity user = userRepository.findByUid(profile.getUid());
+            if (user != null) {
+                String name = profile.getFullName();
+                String major = profile.getMajor();
+                Long classId = profile.getClassId();
+                user.setFullName(StringUtils.isNotBlank(name) ? name : user.getFullName());
+                user.setMajor(StringUtils.isNotBlank(major) ? major : user.getMajor());
+                user.setClassId(classId != null && classId != 0 ? classId : user.getClassId());
+                userRepository.save(user);
+                return SUCCESS;
+            } else throw new Exception(USER_NOT_FOUND);
+        } else throw new Exception(UID_NULL);
+    }
 }

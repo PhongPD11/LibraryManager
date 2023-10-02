@@ -13,6 +13,21 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Commons {
+    public static final String EXIST_USERNAME = "existUsername";
+    public static final String EXIST_EMAIL = "existEmail";
+    public static final String EXIST = "exist";
+    public static final String EXIST_LOAN = "existLoan";
+    public static final String NOT_EXIST = "notExist";
+    public static final String NOT_AVAILABLE = "notAvailable";
+    public static final String DATA_NULL = "dataNull";
+    public static final String INVALID_PASSWORD = "invalidPassword";
+    public static final String USER_NOT_FOUND = "userNotFound";
+    public static final String SUCCESS = "success";
+    public static final String UID_NULL = "uidNull";
+    public static final String SCHEDULE_BORROW = "scheduleBorrow";
+    public static final String BORROWING = "borrowing";
+    public static final String BORROW_RETURNED = "borrowReturned";
+    public static final String BORROW_EXPIRED = "borrowExpired";
     public static Boolean isNullOrEmpty(String object) {
         if (object == null) {
             return true;
@@ -29,11 +44,11 @@ public class Commons {
         UserEntity existUserEmail = userRepository.findByEmail(register.getEmail());
         UserEntity existUsername = userRepository.findByUsername(register.getUsername());
         if (existUsername != null) {
-            throw new Exception("User exist!");
+            throw new Exception(EXIST_USERNAME);
         }
         if (existUserEmail != null) {
             if (existUserEmail.getIsEnabled()) {
-                throw new Exception("User exist!");
+                throw new Exception(EXIST_EMAIL);
             } else {
                 existUserEmail.setPassword(passwordEncoder.encode(register.getPassword()));
                 existUserEmail.setEmail(register.getEmail());
@@ -45,7 +60,7 @@ public class Commons {
                 existUserEmail.setClassId(register.getClassId());
                 userRepository.save(existUserEmail);
                 sendActiveCode(mailSender, register.getEmail(), code, existUserEmail.getFullName());
-                return "Success!";
+                return SUCCESS;
             }
         }
         UserEntity saveUser = new UserEntity();
@@ -72,10 +87,11 @@ public class Commons {
             userRepository.save(newUser.get());
         }
         sendActiveCode(mailSender, register.getEmail(), code, saveUser.getFullName());
-        return "Success!";
+        return SUCCESS;
     }
 
-    private static void sendActiveCode(JavaMailSender mailSender, String email, Long code, String name) throws Exception {
+    private static void sendActiveCode(JavaMailSender mailSender, String email, Long code, String fullName) throws Exception {
+        String name = fullName.substring(0, fullName.indexOf(" "));
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);
         helper.setSubject("Verify your Smart Library account");

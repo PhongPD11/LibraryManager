@@ -13,6 +13,6 @@ public class Register {
     private String password;
     private String email;
     private String fcm;
-    private String classId;
+    private Long classId;
     private String major;
 }

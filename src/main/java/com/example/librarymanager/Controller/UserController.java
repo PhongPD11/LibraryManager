@@ -1,8 +1,11 @@
 package com.example.librarymanager.Controller;
 
 import com.example.librarymanager.Commons.ResponseCommon;
-import com.example.librarymanager.DTOs.*;
-import com.example.librarymanager.Services.Implement.UserServiceImpl;
+import com.example.librarymanager.DTOs.ApiResponse;
+import com.example.librarymanager.DTOs.Login;
+import com.example.librarymanager.DTOs.Profile;
+import com.example.librarymanager.DTOs.Register;
+import com.example.librarymanager.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +17,7 @@ public class UserController {
 //    JavaMailSender mailSender;
 
     @Autowired
-    UserServiceImpl service;
+    UserService service;
 
     @PostMapping("/login")
     public ApiResponse authenticateUser(@RequestBody Login login) {
@@ -46,8 +49,24 @@ public class UserController {
     @GetMapping("/verify")
     public Object userConfirm(@RequestParam Long activeCode, String email, String fcm) {
         try {
-            service.confirm(activeCode, email,fcm);
-            return "Success";
+            return ResponseCommon.response(service.confirm(activeCode, email,fcm), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
+    @GetMapping("/profile")
+    public ApiResponse userConfirm(@RequestParam Long uid) {
+        try {
+            return ResponseCommon.response(service.getProfile(uid), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+    @PutMapping("/profile")
+    public ApiResponse userConfirm(@RequestBody Profile profile) {
+        try {
+            return ResponseCommon.response(service.editProfile(profile), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }

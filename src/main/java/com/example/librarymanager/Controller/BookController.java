@@ -28,6 +28,24 @@ public class BookController {
         }
     }
 
+    @GetMapping("/book")
+    public ApiResponse addBook(@RequestParam Long bookId) {
+        try {
+            return ResponseCommon.response(service.getBookDetail(bookId), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
+    @PostMapping("/type")
+    public ApiResponse addType(@RequestBody String type) {
+        try {
+            return ResponseCommon.response(service.addType(type), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
     @PutMapping("/book")
     public ApiResponse updateBook(@RequestBody BookData book) {
         try {
@@ -70,6 +88,31 @@ public class BookController {
     @GetMapping("/test")
     public String Test(){
         return "Update!";
+    }
+
+    @GetMapping("/borrow/schedule")
+    public ApiResponse scheduleLoan(@RequestParam Long bookId, Long uid){
+        try {
+            return ResponseCommon.response(service.scheduleBorrow(bookId, uid), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+    @GetMapping("/borrow")
+    public ApiResponse loanBook(@RequestParam Long bookId, Long uid){
+        try {
+            return ResponseCommon.response(service.borrowBook(bookId, uid), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+    @GetMapping("/borrow/return")
+    public ApiResponse returnBook(@RequestParam Long bookId, Long uid){
+        try {
+            return ResponseCommon.response(service.returnBook(bookId, uid), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
     }
 
 }
