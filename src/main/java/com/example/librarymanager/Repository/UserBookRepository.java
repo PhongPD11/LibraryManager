@@ -9,7 +9,8 @@ import java.util.List;
 
 @Repository
 public interface UserBookRepository extends JpaRepository<UserBookEntity, Long> {
-    List<UserBookEntity> findByUid(Long Uid);
+    List<UserBookEntity> findByUid(Long uid);
+    List<UserBookEntity> findByBookId(Long bookId);
     UserBookEntity findByBookIdAndUid(Long bookId, Long uid);
     List<UserBookEntity> findByCreateAt(LocalDateTime createAt);
     List<UserBookEntity> findByExpireAt(LocalDateTime expireAt);

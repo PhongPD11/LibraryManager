@@ -4,6 +4,7 @@ import com.example.librarymanager.Commons.BookCommons;
 import com.example.librarymanager.Commons.Commons;
 import com.example.librarymanager.DTOs.Book;
 import com.example.librarymanager.DTOs.BookData;
+import com.example.librarymanager.DTOs.BorrowBook;
 import com.example.librarymanager.Entity.AuthorBookEntity;
 import com.example.librarymanager.Entity.BookEntity;
 import com.example.librarymanager.Entity.TypeEntity;
@@ -109,8 +110,10 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public UserBookEntity scheduleBorrow(Long bookId, Long uid) throws Exception {
-        if (bookId != null && uid !=null) {
+    public UserBookEntity scheduleBorrow(BorrowBook borrow) throws Exception {
+        if (borrow.getBookId() != null && borrow.getUid() != null && borrow.getIsDelivery() != null) {
+            Long bookId = borrow.getBookId();
+            Long uid = borrow.getUid();
             Optional<BookEntity> existBook = Optional.ofNullable(bookRepository.findByBookId(bookId));
             if (existBook.isPresent()) {
                 Long amount = existBook.get().getAmount();
@@ -121,14 +124,20 @@ public class BookServiceImpl implements BookService {
                     } else {
                         existBook.get().setAmount(amount - 1L);
                         bookRepository.save(existBook.get());
-                        UserBookEntity borrow = new UserBookEntity();
-                        borrow.setBookId(bookId);
-                        borrow.setUid(uid);
+                        UserBookEntity newBorrow = new UserBookEntity();
+                        newBorrow.setBookId(bookId);
+                        newBorrow.setUid(uid);
+                        newBorrow.setIsDelivery(borrow.getIsDelivery());
+                        if (borrow.getIsDelivery()) {
+                            if (StringUtils.isNotBlank(borrow.getAddress())) {
+                                newBorrow.setAddress(borrow.getAddress());
+                            } else throw new Exception(DATA_NULL);
+                        }
                         LocalDateTime currentTime = LocalDateTime.now();
-                        borrow.setCreateAt(currentTime);
-                        borrow.setStatus(SCHEDULE_BORROW);
-                        userBookRepository.save(borrow);
-                        return borrow;
+                        newBorrow.setCreateAt(currentTime);
+                        newBorrow.setStatus(SCHEDULE_BORROW);
+                        userBookRepository.save(newBorrow);
+                        return newBorrow;
                     }
                 } else throw new Exception(NOT_AVAILABLE);
             } else throw new Exception(NOT_EXIST);
@@ -137,7 +146,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public UserBookEntity borrowBook(Long bookId, Long uid) throws Exception {
-        if (bookId != null && uid !=null) {
+        if (bookId != null && uid != null) {
             Optional<BookEntity> existBook = Optional.ofNullable(bookRepository.findByBookId(bookId));
             if (existBook.isPresent()) {
                 LocalDateTime currentTime = LocalDateTime.now();
@@ -173,11 +182,11 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public String returnBook(Long bookId, Long uid) throws Exception {
-        if (bookId != null && uid !=null){
+        if (bookId != null && uid != null) {
             Optional<UserBookEntity> existBorrow = Optional.ofNullable(userBookRepository.findByBookIdAndUid(bookId, uid));
             Optional<BookEntity> existBook = Optional.ofNullable(bookRepository.findByBookId(bookId));
             LocalDateTime currentTime = LocalDateTime.now();
-            if (existBorrow.isPresent() && existBook.isPresent()){
+            if (existBorrow.isPresent() && existBook.isPresent()) {
                 existBorrow.get().setReturnedAt(currentTime);
                 existBorrow.get().setStatus(BORROW_RETURNED);
                 existBook.get().setAmount(existBook.get().getAmount() + 1L);
@@ -185,6 +194,73 @@ public class BookServiceImpl implements BookService {
                 bookRepository.save(existBook.get());
                 return SUCCESS;
             } else throw new Exception(NOT_EXIST);
+        } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
+    public String voteBook(Long bookId, Long uid, Integer star) throws Exception {
+        if (bookId != null && uid != null && star != null) {
+            if (star >= 1 && star <= 5) {
+                Optional<BookEntity> existBook = Optional.ofNullable(bookRepository.findByBookId(bookId));
+                if (existBook.isPresent()) {
+                    Optional<UserBookEntity> existUserBook = Optional.ofNullable(userBookRepository.findByBookIdAndUid(bookId, uid));
+                    if (existUserBook.isPresent()) {
+                        existUserBook.get().setVoting(star);
+                        userBookRepository.save(existUserBook.get());
+                    } else {
+                        UserBookEntity newVote = new UserBookEntity();
+                        newVote.setVoting(star);
+                        newVote.setUid(uid);
+                        newVote.setBookId(bookId);
+                        userBookRepository.save(newVote);
+                    }
+                    BookCommons.voteBook(userBookRepository, bookRepository, bookId, star, existBook.get());
+                    return SUCCESS;
+                } else throw new Exception(NOT_EXIST);
+            } else throw new Exception(INVALID);
+        } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
+    public String favoriteBook(Long bookId, Long uid, Boolean isFavorite) throws Exception {
+        if (bookId != null && uid != null && isFavorite != null) {
+            Optional<BookEntity> existBook = Optional.ofNullable(bookRepository.findByBookId(bookId));
+            if (existBook.isPresent()) {
+                Optional<UserBookEntity> existUserBook = Optional.ofNullable(userBookRepository.findByBookIdAndUid(bookId, uid));
+                if (existUserBook.isPresent()) {
+                    existUserBook.get().setIsFavorite(isFavorite);
+                    userBookRepository.save(existUserBook.get());
+                } else {
+                    UserBookEntity newVote = new UserBookEntity();
+                    newVote.setIsFavorite(isFavorite);
+                    newVote.setUid(uid);
+                    newVote.setBookId(bookId);
+                    userBookRepository.save(newVote);
+                }
+                return SUCCESS;
+            } else throw new Exception(NOT_EXIST);
+        } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
+    public List<Book> favoriteBooks(Long uid) throws Exception {
+        if (uid != null) {
+            List<UserBookEntity> listBook = userBookRepository.findByUid(uid);
+            if (listBook.isEmpty()) {
+                throw new Exception(EMPTY);
+            } else {
+                ArrayList<BookEntity> favoriteBooks = new ArrayList<>();
+                for (UserBookEntity book : listBook) {
+                    if (book.getIsFavorite()) {
+                        Long bookId = book.getBookId();
+                        BookEntity bookExist = bookRepository.findByBookId(bookId);
+                        if (bookExist != null) {
+                            favoriteBooks.add(bookExist);
+                        } else throw new Exception(BOOK_NOT_FOUND);
+                    }
+                }
+                return BookCommons.showBooksInfo(favoriteBooks, authorBookRepository, authorRepository, typeBookRepository, typeRepository);
+            }
         } else throw new Exception(DATA_NULL);
     }
 

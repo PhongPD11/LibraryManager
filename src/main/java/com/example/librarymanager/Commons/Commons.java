@@ -28,6 +28,8 @@ public class Commons {
     public static final String BORROWING = "borrowing";
     public static final String BORROW_RETURNED = "borrowReturned";
     public static final String BORROW_EXPIRED = "borrowExpired";
+    public static final String INVALID = "invalid";
+    public static final String EMPTY = "empty";
     public static Boolean isNullOrEmpty(String object) {
         if (object == null) {
             return true;

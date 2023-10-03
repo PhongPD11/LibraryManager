@@ -2,9 +2,11 @@ package com.example.librarymanager.Services;
 
 import com.example.librarymanager.DTOs.Book;
 import com.example.librarymanager.DTOs.BookData;
+import com.example.librarymanager.DTOs.BorrowBook;
 import com.example.librarymanager.Entity.UserBookEntity;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public interface BookService {
 
@@ -24,7 +26,10 @@ public interface BookService {
 
     Book getBookDetail(Long bookId) throws Exception;
 
-    UserBookEntity scheduleBorrow(Long bookId, Long uid) throws Exception;
+    UserBookEntity scheduleBorrow(BorrowBook borrow) throws Exception;
     UserBookEntity borrowBook(Long bookId, Long uid) throws Exception;
     String returnBook(Long bookId, Long uid) throws Exception;
+    String voteBook(Long bookId, Long uid, Integer star) throws Exception;
+    String favoriteBook(Long bookId, Long uid, Boolean isFavorite) throws Exception;
+    List<Book> favoriteBooks(Long uid) throws Exception;
 }

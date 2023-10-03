@@ -3,11 +3,9 @@ package com.example.librarymanager.Commons;
 import com.example.librarymanager.DTOs.Author;
 import com.example.librarymanager.DTOs.Book;
 import com.example.librarymanager.Entity.*;
-import com.example.librarymanager.Repository.AuthorBookRepository;
-import com.example.librarymanager.Repository.AuthorRepository;
-import com.example.librarymanager.Repository.TypeBookRepository;
-import com.example.librarymanager.Repository.TypeRepository;
+import com.example.librarymanager.Repository.*;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -91,4 +89,29 @@ public class BookCommons {
         }
         return authors;
     }
+
+    public static void voteBook(UserBookRepository userBookRepository, BookRepository bookRepository, Long bookId, Integer star, BookEntity existBook){
+        List<UserBookEntity> listVoting = userBookRepository.findByBookId(bookId);
+        int voteCount = 0;
+        int sumStar = 0;
+        if (!listVoting.isEmpty()){
+            for (UserBookEntity voting: listVoting) {
+                if (voting.getVoting() != null) {
+                    voteCount++;
+                    sumStar = sumStar + voting.getVoting();
+                }
+            }
+            if (voteCount > 0) {
+                double result = (double) sumStar / voteCount;
+                DecimalFormat df = new DecimalFormat("#.#");
+                String formattedResult = df.format(result);
+                double roundedResult = Double.parseDouble(formattedResult);
+                existBook.setVote(roundedResult);
+            } else {
+                existBook.setVote(0.0);
+            }
+            bookRepository.save(existBook);
+        }
+    }
+
 }

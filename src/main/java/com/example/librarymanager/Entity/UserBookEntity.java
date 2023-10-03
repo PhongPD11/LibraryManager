@@ -23,4 +23,8 @@ public class UserBookEntity {
     private LocalDateTime expireAt;
     private LocalDateTime returnedAt;
     private String status;
+    private Integer voting;
+    private Boolean isFavorite;
+    private Boolean isDelivery;
+    private String address;
 }
