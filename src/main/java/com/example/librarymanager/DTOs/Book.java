@@ -13,4 +13,5 @@ public class Book{
     private Long amount;
     private List<String> author;
     private List<String> type;
+    private Double vote;
 }

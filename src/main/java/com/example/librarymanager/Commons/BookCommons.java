@@ -54,6 +54,11 @@ public class BookCommons {
         bookInfo.setName(book.getName());
         bookInfo.setAmount(book.getAmount());
         bookInfo.setBookId(book.getBookId());
+        if (book.getVote() != null){
+            bookInfo.setVote(book.getVote());
+        } else {
+            bookInfo.setVote(0.0);
+        }
 
         List<AuthorBookEntity> listAuthorBook = authorBookRepository.findByBookId(book.getBookId());
         ArrayList<String> listAuthor = new ArrayList<>();
