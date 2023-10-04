@@ -14,4 +14,5 @@ public class Book{
     private List<String> author;
     private List<String> type;
     private Double vote;
+    private String imageUrl;
 }

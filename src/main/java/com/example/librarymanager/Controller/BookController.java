@@ -5,8 +5,10 @@ import com.example.librarymanager.DTOs.ApiResponse;
 import com.example.librarymanager.DTOs.BookData;
 import com.example.librarymanager.DTOs.BorrowBook;
 import com.example.librarymanager.Services.BookService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/library")
@@ -21,16 +23,18 @@ public class BookController {
     }
 
     @PostMapping("/book")
-    public ApiResponse addBook(@RequestBody BookData book) {
+    public ApiResponse addBook(@RequestPart("model") String json, @RequestPart("file") MultipartFile file) {
         try {
-            return ResponseCommon.response(service.addBook(book), "Success!");
+            ObjectMapper mapper = new ObjectMapper();
+            BookData dataModel = mapper.readValue(json, BookData.class);
+            return ResponseCommon.response(service.addBook(dataModel, file), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }
     }
 
     @GetMapping("/book")
-    public ApiResponse addBook(@RequestParam Long bookId) {
+    public ApiResponse getBook(@RequestParam Long bookId) {
         try {
             return ResponseCommon.response(service.getBookDetail(bookId), "Success!");
         } catch (Exception e) {

@@ -54,6 +54,7 @@ public class BookCommons {
         bookInfo.setName(book.getName());
         bookInfo.setAmount(book.getAmount());
         bookInfo.setBookId(book.getBookId());
+        bookInfo.setImageUrl(book.getImageUrl());
         if (book.getVote() != null){
             bookInfo.setVote(book.getVote());
         } else {

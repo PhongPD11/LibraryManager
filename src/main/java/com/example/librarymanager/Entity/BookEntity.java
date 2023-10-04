@@ -21,4 +21,5 @@ public class BookEntity {
     private Long  borrowingPeriod;
     private String bookLocation;
     private Double vote;
+    private String imageUrl;
 }

@@ -4,6 +4,7 @@ import com.example.librarymanager.DTOs.Book;
 import com.example.librarymanager.DTOs.BookData;
 import com.example.librarymanager.DTOs.BorrowBook;
 import com.example.librarymanager.Entity.UserBookEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +13,7 @@ public interface BookService {
 
     ArrayList<Book> getAllBooks();
 
-    BookData addBook(BookData book) throws Exception;
+    BookData addBook(BookData book, MultipartFile file) throws Exception;
 
     BookData updateBook(BookData book) throws Exception;
 

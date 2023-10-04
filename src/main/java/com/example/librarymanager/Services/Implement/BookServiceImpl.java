@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -53,7 +54,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public BookData addBook(BookData book) throws Exception {
+    public BookData addBook(BookData book, MultipartFile file) throws Exception {
         BookEntity saveBook = new BookEntity();
         if (StringUtils.isBlank(book.getName()) || book.getBookId() == null ||
                 StringUtils.isBlank(book.getName()) || StringUtils.isBlank(book.getName()) ||
@@ -74,9 +75,16 @@ public class BookServiceImpl implements BookService {
                 BookCommons.saveAuthorBook(book.getAuthor(), book.getBookId(), authorBookRepository, authorRepository);
                 BookCommons.saveTypeBook(book.getType(), book.getBookId(), typeBookRepository, typeRepository);
 
+                if (file != null) {
+                    String url = Commons.uploadImage(file, "book_image/");
+                    if (StringUtils.isNotBlank(url)){
+                        saveBook.setImageUrl(url);
+                        book.setImageUrl(url);
+                    }
+                } else throw new Exception("Pls upload image!");
+
                 saveBook = bookRepository.save(saveBook);
                 book.setId(saveBook.getId());
-
                 return book;
             }
         }

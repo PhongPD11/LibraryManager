@@ -18,4 +18,5 @@ public class BookData {
     private List<AuthorEntity> author;
     private List<TypeEntity> type;
     private String bookLocation;
+    private String imageUrl;
 }
