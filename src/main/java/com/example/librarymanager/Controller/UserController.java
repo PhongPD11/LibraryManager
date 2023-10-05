@@ -1,13 +1,12 @@
 package com.example.librarymanager.Controller;
 
 import com.example.librarymanager.Commons.ResponseCommon;
-import com.example.librarymanager.DTOs.ApiResponse;
-import com.example.librarymanager.DTOs.Login;
-import com.example.librarymanager.DTOs.Profile;
-import com.example.librarymanager.DTOs.Register;
+import com.example.librarymanager.DTOs.*;
 import com.example.librarymanager.Services.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping
@@ -64,9 +63,11 @@ public class UserController {
         }
     }
     @PutMapping("/profile")
-    public ApiResponse userConfirm(@RequestBody Profile profile) {
+    public ApiResponse userConfirm(@RequestPart("model") String json, @RequestPart("file") MultipartFile file) {
         try {
-            return ResponseCommon.response(service.editProfile(profile), "Success!");
+            ObjectMapper mapper = new ObjectMapper();
+            Profile dataModel = mapper.readValue(json, Profile.class);
+            return ResponseCommon.response(service.editProfile(dataModel, file), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }

@@ -18,6 +18,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -138,7 +139,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String editProfile(Profile profile) throws Exception {
+    public UserEntity editProfile(Profile profile, MultipartFile file) throws Exception {
         if (profile.getUid() != null) {
             UserEntity user = userRepository.findByUid(profile.getUid());
             if (user != null) {
@@ -148,8 +149,16 @@ public class UserServiceImpl implements UserService {
                 user.setFullName(StringUtils.isNotBlank(name) ? name : user.getFullName());
                 user.setMajor(StringUtils.isNotBlank(major) ? major : user.getMajor());
                 user.setClassId(classId != null && classId != 0 ? classId : user.getClassId());
+
+                if (file != null) {
+                    String url = Commons.uploadImage(file, "avatar/");
+                    if (StringUtils.isNotBlank(url)){
+                        user.setImageUrl(url);
+                        user.setImageUrl(url);
+                    }
+                }
                 userRepository.save(user);
-                return SUCCESS;
+                return user;
             } else throw new Exception(USER_NOT_FOUND);
         } else throw new Exception(UID_NULL);
     }

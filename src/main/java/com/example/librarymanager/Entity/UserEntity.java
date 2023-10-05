@@ -21,6 +21,7 @@ public class UserEntity {
     private String email;
     private Long classId;
     private String major;
+    private String imageUrl;
     //account
     private String username;
     private String password;

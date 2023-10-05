@@ -12,4 +12,5 @@ public class Profile {
     private Long classId;
     private String major;
     private String token;
+    private String imageUrl;
 }
