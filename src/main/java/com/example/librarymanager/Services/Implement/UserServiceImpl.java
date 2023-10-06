@@ -59,10 +59,13 @@ public class UserServiceImpl implements UserService {
                         );
                         if (authentication.isAuthenticated()) {
                             SecurityContextHolder.getContext().setAuthentication(authentication);
-                            user.setFcm(login.getFcm());
+                            if (StringUtils.isNotBlank(login.getFcm())){
+                                user.setFcm(login.getFcm());
+                            }
                             userRepository.save(user);
                             String authenToken = tokenProvider.generateToken(((UserDetail) authentication.getPrincipal()).getUser());
                             Profile profile = new Profile();
+                            profile.setFcm(login.getFcm());
                             profile.setToken(authenToken);
                             profile.setUid(user.getUid());
                             profile.setMajor(user.getMajor());
