@@ -1,26 +1,43 @@
 package com.example.librarymanager.Schedule;
 
-import com.example.librarymanager.Entity.UserEntity;
+import com.example.librarymanager.Entity.UserBookEntity;
+import com.example.librarymanager.Repository.UserBookRepository;
 import com.example.librarymanager.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.List;
+
+import static com.example.librarymanager.Commons.Commons.BORROW_EXPIRED;
 
 @Component
 public class Schedule {
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    UserBookRepository userBookRepository;
     @Scheduled(cron = "0 * * * * ?")
     public void cronJobSch() {
+        List<UserBookEntity> listExpireSoon = userBookRepository.getExpireSoon();
+        if (!listExpireSoon.isEmpty()){
+            for (UserBookEntity userBook : listExpireSoon){
+                System.out.println(userBook.getUid() + " " + userBook.getBookId());
+            }
+        }
+    }
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-        Date now = new Date();
-        String strDate = sdf.format(now);
-        UserEntity user = userRepository.findById(2L).get();
-        System.out.println(strDate + "-- Book: " + user.getUsername());
+    @Scheduled(cron = "5 * * * * ?")
+    public void cronJobSch2() {
+        List<UserBookEntity> listExpireSoon = userBookRepository.getExpired();
+        if (!listExpireSoon.isEmpty()){
+            for (UserBookEntity userBook : listExpireSoon){
+                userBook.setStatus(BORROW_EXPIRED);
+                userBookRepository.save(userBook);
+                System.out.println(userBook.getUid().toString() +" "+ userBook.getBookId().toString() +" "+ userBook.getStatus());
+            }
+        }
     }
 
 }

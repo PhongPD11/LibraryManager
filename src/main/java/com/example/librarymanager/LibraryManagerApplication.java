@@ -1,11 +1,7 @@
 package com.example.librarymanager;
 
-import ch.qos.logback.core.net.SyslogOutputStream;
-import com.example.librarymanager.Entity.UserEntity;
-import com.example.librarymanager.Repository.BookRepository;
 import com.example.librarymanager.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -30,6 +26,10 @@ public class LibraryManagerApplication
 
     @Scheduled(cron = "0 * * * * ?")
     public void cronJobSch() throws Exception {
+    }
+
+    @Scheduled(cron = "5 * * * * ?")
+    public void cronJobSch2() throws Exception {
     }
 
 }

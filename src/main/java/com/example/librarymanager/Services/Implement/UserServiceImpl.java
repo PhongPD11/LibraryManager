@@ -72,6 +72,7 @@ public class UserServiceImpl implements UserService {
                             profile.setEmail(user.getEmail());
                             profile.setClassId(user.getClassId());
                             profile.setFullName(user.getFullName());
+                            profile.setImageUrl(user.getImageUrl());
                             return profile;
                         } else throw new Exception(INVALID_PASSWORD);
                     } else throw new Exception("User is not verify.");
