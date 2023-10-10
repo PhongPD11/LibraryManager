@@ -58,8 +58,9 @@ public class BookServiceImpl implements BookService {
         BookEntity saveBook = new BookEntity();
         if (StringUtils.isBlank(book.getName()) || book.getBookId() == null ||
                 StringUtils.isBlank(book.getName()) || StringUtils.isBlank(book.getName()) ||
-                book.getBorrowingPeriod() == null || ObjectUtils.isEmpty(book.getAuthor()) ||
-                StringUtils.isBlank(book.getBookLocation())) {
+                StringUtils.isBlank(book.getLanguage()) || StringUtils.isBlank(book.getType()) ||
+                StringUtils.isBlank(book.getMajor()) || ObjectUtils.isEmpty(book.getAuthor()) ||
+                book.getBorrowingPeriod() == null || StringUtils.isBlank(book.getBookLocation())) {
             throw new Exception("Please fill all information!");
         } else {
             Optional<BookEntity> existBook = Optional.ofNullable(bookRepository.findByBookId(book.getBookId()));
@@ -67,13 +68,16 @@ public class BookServiceImpl implements BookService {
                 throw new Exception("Book exist!");
             } else {
                 saveBook.setName(book.getName());
+                saveBook.setMajor(book.getMajor());
                 saveBook.setBookId(book.getBookId());
                 saveBook.setAmount(book.getAmount());
                 saveBook.setBorrowingPeriod(book.getBorrowingPeriod());
                 saveBook.setBookLocation(book.getBookLocation());
+                saveBook.setType(book.getType());
+                saveBook.setLanguage(book.getLanguage());
 
                 BookCommons.saveAuthorBook(book.getAuthor(), book.getBookId(), authorBookRepository, authorRepository);
-                BookCommons.saveTypeBook(book.getType(), book.getBookId(), typeBookRepository, typeRepository);
+//                BookCommons.saveTypeBook(book.getType(), book.getBookId(), typeBookRepository, typeRepository);
 
                 if (file != null) {
                     String url = Commons.uploadImage(file, "book_image/");
@@ -281,6 +285,9 @@ public class BookServiceImpl implements BookService {
                 BookEntity existBook = bookRepository.findById(id).get();
                 Long bookIdExist = existBook.getBookId();
                 String name = book.getName();
+                String major = book.getMajor();
+                String type = book.getType();
+                String language = book.getLanguage();
                 Long amount = book.getAmount();
 
                 if (book.getBookId() != null && !book.getBookId().equals(existBook.getBookId())) {
@@ -300,14 +307,29 @@ public class BookServiceImpl implements BookService {
                 } else {
                     existBook.setName(name);
                 }
+                if (StringUtils.isBlank(language)) {
+                    book.setLanguage(existBook.getLanguage());
+                } else {
+                    existBook.setName(language);
+                }
+                if (StringUtils.isBlank(type)) {
+                    book.setType(existBook.getType());
+                } else {
+                    existBook.setName(type);
+                }
+                if (StringUtils.isBlank(major)) {
+                    book.setMajor(existBook.getMajor());
+                } else {
+                    existBook.setMajor(major);
+                }
                 if (amount == null) {
                     book.setAmount(existBook.getAmount());
                 } else {
                     existBook.setAmount(amount);
                 }
 
-                typeBookRepository.deleteAll(typeBookRepository.findByBookId(bookIdExist));
-                BookCommons.saveTypeBook(book.getType(), book.getBookId(), typeBookRepository, typeRepository);
+//                typeBookRepository.deleteAll(typeBookRepository.findByBookId(bookIdExist));
+//                BookCommons.saveTypeBook(book.getType(), book.getBookId(), typeBookRepository, typeRepository);
 
                 authorBookRepository.deleteAll(authorBookRepository.findByBookId(bookIdExist));
                 BookCommons.saveAuthorBook(book.getAuthor(), book.getBookId(), authorBookRepository, authorRepository);

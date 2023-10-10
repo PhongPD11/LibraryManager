@@ -12,7 +12,11 @@ public class Book{
     private String name;
     private Long amount;
     private List<String> author;
-    private List<String> type;
+//    private List<String> type;
+    private String type;
     private Double vote;
     private String imageUrl;
+    private String major;
+    private String language;
+
 }

@@ -34,27 +34,31 @@ public class BookCommons {
             authorBookRepository.save(saveAuthorBook);
         }
     }
-    public static void saveTypeBook(List<TypeEntity> types, Long bookId, TypeBookRepository typeBookRepository, TypeRepository typeRepository) {
-        for (TypeEntity type : types) {
-            TypeBookEntity saveTypeBook = new TypeBookEntity();
-            String typeName = type.getType();
-            Optional<TypeEntity> typeExist = Optional.ofNullable(typeRepository.findByType(typeName));
-            if (!typeExist.isPresent()) {
-                break;
-            } else {
-                saveTypeBook.setTypeId(typeExist.get().getId());
-                saveTypeBook.setBookId(bookId);
-            }
-            typeBookRepository.save(saveTypeBook);
-        }
-    }
+//    public static void saveTypeBook(List<TypeEntity> types, Long bookId, TypeBookRepository typeBookRepository, TypeRepository typeRepository) {
+//        for (TypeEntity type : types) {
+//            TypeBookEntity saveTypeBook = new TypeBookEntity();
+//            String typeName = type.getType();
+//            Optional<TypeEntity> typeExist = Optional.ofNullable(typeRepository.findByType(typeName));
+//            if (!typeExist.isPresent()) {
+//                break;
+//            } else {
+//                saveTypeBook.setTypeId(typeExist.get().getId());
+//                saveTypeBook.setBookId(bookId);
+//            }
+//            typeBookRepository.save(saveTypeBook);
+//        }
+//    }
 
     public static Book showBookInfo(BookEntity book, AuthorBookRepository authorBookRepository, AuthorRepository authorRepository, TypeBookRepository typeBookRepository, TypeRepository typeRepository){
         Book bookInfo = new Book();
         bookInfo.setName(book.getName());
+        bookInfo.setMajor(book.getMajor());
         bookInfo.setAmount(book.getAmount());
         bookInfo.setBookId(book.getBookId());
         bookInfo.setImageUrl(book.getImageUrl());
+        bookInfo.setType(book.getType());
+        bookInfo.setLanguage(book.getLanguage());
+
         if (book.getVote() != null){
             bookInfo.setVote(book.getVote());
         } else {
@@ -67,13 +71,13 @@ public class BookCommons {
             listAuthor.add(authorRepository.findByAuthorId(authorBook.getAuthorId()).getAuthorName());
         }
 
-        List<TypeBookEntity> listTypeBook = typeBookRepository.findByBookId(book.getBookId());
-        ArrayList<String> listType = new ArrayList<>();
-        for (TypeBookEntity typeBook : listTypeBook) {
-            listType.add(typeRepository.findById(typeBook.getTypeId()).get().getType());
-        }
+//        List<TypeBookEntity> listTypeBook = typeBookRepository.findByBookId(book.getBookId());
+//        ArrayList<String> listType = new ArrayList<>();
+//        for (TypeBookEntity typeBook : listTypeBook) {
+//            listType.add(typeRepository.findById(typeBook.getTypeId()).get().getType());
+//        }
         bookInfo.setAuthor(listAuthor);
-        bookInfo.setType(listType);
+//        bookInfo.setType(listType);
         return bookInfo;
     }
 

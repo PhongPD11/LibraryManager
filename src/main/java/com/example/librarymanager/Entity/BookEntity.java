@@ -22,4 +22,7 @@ public class BookEntity {
     private String bookLocation;
     private Double vote;
     private String imageUrl;
+    private String major;
+    private String language;
+    private String type;
 }
