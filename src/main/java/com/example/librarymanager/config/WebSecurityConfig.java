@@ -58,8 +58,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .cors()
                 .and().authorizeRequests()
                 .antMatchers("/login", "/register", "/change-device", "/verify", "/email").permitAll()
-                .antMatchers("/library/test", "/notification", "/notification/delete", "/books","/books/author","/profile",
-                        "/library/favorites", "/library/favorite")
+                .antMatchers("/library/test", "/notification", "/notification/delete", "/library/books","/library/books/author","/profile",
+                        "/library/favorites", "/library/favorite", "/library/userbook","/library/rate" )
                 .permitAll()
                 .anyRequest().authenticated()
                 .and()

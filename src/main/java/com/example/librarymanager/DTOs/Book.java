@@ -14,9 +14,10 @@ public class Book{
     private List<String> author;
 //    private List<String> type;
     private String type;
-    private Double vote;
+    private Double rated;
     private String imageUrl;
     private String major;
     private String language;
+    private Long userRate;
 
 }

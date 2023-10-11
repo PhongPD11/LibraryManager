@@ -20,7 +20,7 @@ public class BookEntity {
     private Long amount;
     private Long  borrowingPeriod;
     private String bookLocation;
-    private Double vote;
+    private Double rated;
     private String imageUrl;
     private String major;
     private String language;

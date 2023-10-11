@@ -49,7 +49,7 @@ public class BookCommons {
 //        }
 //    }
 
-    public static Book showBookInfo(BookEntity book, AuthorBookRepository authorBookRepository, AuthorRepository authorRepository, TypeBookRepository typeBookRepository, TypeRepository typeRepository){
+    public static Book showBookInfo(BookEntity book, AuthorBookRepository authorBookRepository, AuthorRepository authorRepository, UserBookRepository userBookRepository){
         Book bookInfo = new Book();
         bookInfo.setName(book.getName());
         bookInfo.setMajor(book.getMajor());
@@ -59,10 +59,11 @@ public class BookCommons {
         bookInfo.setType(book.getType());
         bookInfo.setLanguage(book.getLanguage());
 
-        if (book.getVote() != null){
-            bookInfo.setVote(book.getVote());
+        if (book.getRated() != null){
+            bookInfo.setRated(book.getRated());
+            bookInfo.setUserRate(userBookRepository.getUserRate(book.getBookId()));
         } else {
-            bookInfo.setVote(0.0);
+            bookInfo.setRated(0.0);
         }
 
         List<AuthorBookEntity> listAuthorBook = authorBookRepository.findByBookId(book.getBookId());
@@ -81,10 +82,10 @@ public class BookCommons {
         return bookInfo;
     }
 
-    public static ArrayList<Book> showBooksInfo(List<BookEntity> listOfBook, AuthorBookRepository authorBookRepository, AuthorRepository authorRepository, TypeBookRepository typeBookRepository, TypeRepository typeRepository){
+    public static ArrayList<Book> showBooksInfo(List<BookEntity> listOfBook, AuthorBookRepository authorBookRepository, AuthorRepository authorRepository, UserBookRepository userBookRepository){
         ArrayList<Book> books = new ArrayList<>();
         for (BookEntity book : listOfBook) {
-            books.add(showBookInfo(book, authorBookRepository, authorRepository, typeBookRepository, typeRepository));
+            books.add(showBookInfo(book, authorBookRepository, authorRepository, userBookRepository));
         }
         return books;
     }
@@ -100,25 +101,25 @@ public class BookCommons {
         return authors;
     }
 
-    public static void voteBook(UserBookRepository userBookRepository, BookRepository bookRepository, Long bookId, Integer star, BookEntity existBook){
-        List<UserBookEntity> listVoting = userBookRepository.findByBookId(bookId);
-        int voteCount = 0;
+    public static void voteBook(UserBookRepository userBookRepository, BookRepository bookRepository, Long bookId, BookEntity existBook){
+        List<UserBookEntity> listRating = userBookRepository.findByBookId(bookId);
+        int rateCount = 0;
         int sumStar = 0;
-        if (!listVoting.isEmpty()){
-            for (UserBookEntity voting: listVoting) {
-                if (voting.getVoting() != null) {
-                    voteCount++;
-                    sumStar = sumStar + voting.getVoting();
+        if (!listRating.isEmpty()){
+            for (UserBookEntity rating: listRating) {
+                if (rating.getRate() != null) {
+                    rateCount++;
+                    sumStar = sumStar + rating.getRate();
                 }
             }
-            if (voteCount > 0) {
-                double result = (double) sumStar / voteCount;
+            if (rateCount > 0) {
+                double result = (double) sumStar / rateCount;
                 DecimalFormat df = new DecimalFormat("#.#");
                 String formattedResult = df.format(result);
                 double roundedResult = Double.parseDouble(formattedResult);
-                existBook.setVote(roundedResult);
+                existBook.setRated(roundedResult);
             } else {
-                existBook.setVote(0.0);
+                existBook.setRated(0.0);
             }
             bookRepository.save(existBook);
         }

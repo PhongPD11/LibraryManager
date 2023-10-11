@@ -48,6 +48,7 @@ public class FcmServiceImpl implements FcmService {
                     saveNotify.setUid(user.getUid());
                     saveNotify.setContent(pnsRequest.getMessage());
                     saveNotify.setTitle(pnsRequest.getTitle());
+                    saveNotify.setType(pnsRequest.getType().toString());
                     saveNotify.setIsRead(false);
                     saveNotify.setCreateAt(currentTime);
                     userNotificationRepository.save(saveNotify);

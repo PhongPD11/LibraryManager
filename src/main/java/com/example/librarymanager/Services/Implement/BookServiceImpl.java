@@ -15,12 +15,14 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.example.librarymanager.Commons.BookCommons.BOOK_NOT_FOUND;
@@ -49,8 +51,10 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public ArrayList<Book> getAllBooks() {
-        List<BookEntity> listOfBook = bookRepository.findAll();
-        return BookCommons.showBooksInfo(listOfBook, authorBookRepository, authorRepository, typeBookRepository, typeRepository);
+        Sort.Order order = new Sort.Order(Sort.Direction.ASC, "name");
+        Sort sort = Sort.by(order);
+        List<BookEntity> listOfBook = bookRepository.findAll(sort);
+        return BookCommons.showBooksInfo(listOfBook, authorBookRepository, authorRepository, userBookRepository);
     }
 
     @Override
@@ -116,7 +120,7 @@ public class BookServiceImpl implements BookService {
         if (bookId != null) {
             BookEntity book = bookRepository.findByBookId(bookId);
             if (book != null) {
-                return BookCommons.showBookInfo(book, authorBookRepository, authorRepository, typeBookRepository, typeRepository);
+                return BookCommons.showBookInfo(book, authorBookRepository, authorRepository, userBookRepository);
             } else throw new Exception(BOOK_NOT_FOUND);
         } else throw new Exception(UID_NULL);
     }
@@ -165,11 +169,12 @@ public class BookServiceImpl implements BookService {
                 LocalDateTime expireTime = currentTime.plusDays(existBook.get().getBorrowingPeriod());
                 Optional<UserBookEntity> existBorrow = Optional.ofNullable(userBookRepository.findByBookIdAndUid(bookId, uid));
                 if (existBorrow.isPresent()) {
-                    //Borrow after registering
-                    existBorrow.get().setCreatedAt(currentTime);
-                    existBorrow.get().setExpireAt(expireTime);
-                    existBorrow.get().setStatus(BORROWING);
-                    userBookRepository.save(existBorrow.get());
+                    if (!Objects.equals(existBorrow.get().getStatus(), BORROWING)) {
+                        existBorrow.get().setCreatedAt(currentTime);
+                        existBorrow.get().setExpireAt(expireTime);
+                        existBorrow.get().setStatus(BORROWING);
+                        userBookRepository.save(existBorrow.get());
+                    }
                     return existBorrow.get();
                 } else {
                     //Borrow directly
@@ -210,23 +215,23 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public String voteBook(Long bookId, Long uid, Integer star) throws Exception {
+    public String rateBook(Long bookId, Long uid, Integer star) throws Exception {
         if (bookId != null && uid != null && star != null) {
             if (star >= 1 && star <= 5) {
                 Optional<BookEntity> existBook = Optional.ofNullable(bookRepository.findByBookId(bookId));
                 if (existBook.isPresent()) {
                     Optional<UserBookEntity> existUserBook = Optional.ofNullable(userBookRepository.findByBookIdAndUid(bookId, uid));
                     if (existUserBook.isPresent()) {
-                        existUserBook.get().setVoting(star);
+                        existUserBook.get().setRate(star);
                         userBookRepository.save(existUserBook.get());
                     } else {
                         UserBookEntity newVote = new UserBookEntity();
-                        newVote.setVoting(star);
+                        newVote.setRate(star);
                         newVote.setUid(uid);
                         newVote.setBookId(bookId);
                         userBookRepository.save(newVote);
                     }
-                    BookCommons.voteBook(userBookRepository, bookRepository, bookId, star, existBook.get());
+                    BookCommons.voteBook(userBookRepository, bookRepository, bookId, existBook.get());
                     return SUCCESS;
                 } else throw new Exception(NOT_EXIST);
             } else throw new Exception(INVALID);
@@ -271,8 +276,15 @@ public class BookServiceImpl implements BookService {
                         } else throw new Exception(BOOK_NOT_FOUND);
                     }
                 }
-                return BookCommons.showBooksInfo(favoriteBooks, authorBookRepository, authorRepository, typeBookRepository, typeRepository);
+                return BookCommons.showBooksInfo(favoriteBooks, authorBookRepository, authorRepository, userBookRepository);
             }
+        } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
+    public List<UserBookEntity> userBook(Long uid) throws Exception {
+        if (uid !=null ){
+            return userBookRepository.findByUid(uid);
         } else throw new Exception(DATA_NULL);
     }
 
@@ -367,7 +379,7 @@ public class BookServiceImpl implements BookService {
                 for (AuthorBookEntity book : listBooks) {
                     listBooksEnt.add(bookRepository.findByBookId(book.getBookId()));
                 }
-                return BookCommons.showBooksInfo(listBooksEnt, authorBookRepository, authorRepository, typeBookRepository, typeRepository);
+                return BookCommons.showBooksInfo(listBooksEnt, authorBookRepository, authorRepository, userBookRepository);
             }
         }
     }
@@ -379,11 +391,11 @@ public class BookServiceImpl implements BookService {
             throw new Exception("Input keyword!");
         } else {
             if (bookId != null)
-                finalResults.add(BookCommons.showBookInfo(bookRepository.findByBookId(bookId), authorBookRepository, authorRepository, typeBookRepository, typeRepository));
+                finalResults.add(BookCommons.showBookInfo(bookRepository.findByBookId(bookId), authorBookRepository, authorRepository, userBookRepository));
             else if (!Commons.isNullOrEmpty(book)) {
                 book = book.toLowerCase().trim();
-                finalResults.addAll(BookCommons.showBooksInfo(bookRepository.findByNameIgnoreCaseStartsWith(book), authorBookRepository, authorRepository, typeBookRepository, typeRepository));
-                finalResults.addAll(BookCommons.showBooksInfo(bookRepository.findByNameIgnoreCaseContaining(" " + book), authorBookRepository, authorRepository, typeBookRepository, typeRepository));
+                finalResults.addAll(BookCommons.showBooksInfo(bookRepository.findByNameIgnoreCaseStartsWith(book), authorBookRepository, authorRepository, userBookRepository));
+                finalResults.addAll(BookCommons.showBooksInfo(bookRepository.findByNameIgnoreCaseContaining(" " + book), authorBookRepository, authorRepository, userBookRepository));
             }
             if (!Commons.isNullOrEmpty(author)) {
                 author = author.toLowerCase().trim();

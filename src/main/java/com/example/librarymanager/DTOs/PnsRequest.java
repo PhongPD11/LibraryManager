@@ -8,4 +8,7 @@ import lombok.Setter;
 public class PnsRequest {
     private String message;
     private String title;
+    private MessageType type;
 }
+
+

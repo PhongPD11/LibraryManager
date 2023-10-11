@@ -120,10 +120,10 @@ public class BookController {
         }
     }
 
-    @GetMapping("/vote")
+    @GetMapping("/rate")
     public ApiResponse voteBook(@RequestParam Long bookId, Long uid, Integer star){
         try {
-            return ResponseCommon.response(service.voteBook(bookId, uid, star), "Success!");
+            return ResponseCommon.response(service.rateBook(bookId, uid, star), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }
@@ -140,6 +140,15 @@ public class BookController {
     public ApiResponse getFavoriteBooks(@RequestParam Long uid){
         try {
             return ResponseCommon.response(service.favoriteBooks(uid), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
+    @GetMapping("/userbook")
+    public ApiResponse getUserBook(@RequestParam Long uid){
+        try {
+            return ResponseCommon.response(service.userBook(uid), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }

@@ -3,6 +3,7 @@ package com.example.librarymanager.Repository;
 import com.example.librarymanager.Entity.UserBookEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -21,4 +22,7 @@ public interface UserBookRepository extends JpaRepository<UserBookEntity, Long> 
 
     @Query(nativeQuery = true,value ="select * from user_book where status = 'borrowing' and DATE_PART('day', DATE_TRUNC('day', now()) - DATE_TRUNC('day', expire_at)) > 0 order by expire_at desc")
     List<UserBookEntity> getExpired();
+
+    @Query(nativeQuery = true,value ="select count(*) from user_book where rate is not null and book_id = :bookId")
+    Long getUserRate(@Param("bookId") Long bookId);
 }

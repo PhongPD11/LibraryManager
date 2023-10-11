@@ -30,7 +30,8 @@ public interface BookService {
     UserBookEntity scheduleBorrow(BorrowBook borrow) throws Exception;
     UserBookEntity borrowBook(Long bookId, Long uid) throws Exception;
     String returnBook(Long bookId, Long uid) throws Exception;
-    String voteBook(Long bookId, Long uid, Integer star) throws Exception;
+    String rateBook(Long bookId, Long uid, Integer star) throws Exception;
     String favoriteBook(Long bookId, Long uid, Boolean isFavorite) throws Exception;
     List<Book> favoriteBooks(Long uid) throws Exception;
+    List<UserBookEntity> userBook(Long uid) throws Exception;
 }
