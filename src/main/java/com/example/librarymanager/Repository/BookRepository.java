@@ -14,5 +14,6 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
     BookEntity findByBookId(Long bookId);
     List<BookEntity> findByNameIgnoreCaseStartsWith(String name);
     List<BookEntity> findByNameIgnoreCaseContaining(String name);
+    List<BookEntity> findByBookLocation(String bookLocation);
 
 }

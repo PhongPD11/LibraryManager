@@ -22,9 +22,17 @@ public class NotificationController {
     }
 
     @PostMapping("/read")
-    public ApiResponse userRead(@RequestBody Boolean isRead) {
+    public ApiResponse userRead(@RequestParam Long id) {
         try {
-            return ResponseCommon.response(fcmService.userRead(isRead), "Success" );
+            return ResponseCommon.response(fcmService.userRead(id), "Success" );
+        } catch (Exception e){
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+    @PostMapping("/fcm")
+    public ApiResponse userRead(@RequestParam Long uid, String fcm) {
+        try {
+            return ResponseCommon.response(fcmService.sendFcmToken(uid, fcm), "Success" );
         } catch (Exception e){
             return ResponseCommon.response(null, e.getMessage());
         }

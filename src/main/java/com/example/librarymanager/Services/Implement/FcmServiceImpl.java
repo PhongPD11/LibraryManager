@@ -15,9 +15,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import static com.example.librarymanager.Commons.Commons.DATA_NULL;
-import static com.example.librarymanager.Commons.Commons.SUCCESS;
+import static com.example.librarymanager.Commons.Commons.*;
 
 @Service
 public class FcmServiceImpl implements FcmService {
@@ -59,8 +59,15 @@ public class FcmServiceImpl implements FcmService {
     }
 
     @Override
-    public String userRead(Boolean isRead) throws Exception {
-        return null;
+    public String userRead(Long id) throws Exception {
+        if (id != null) {
+            Optional<UserNotificationEntity> notify = userNotificationRepository.findById(id);
+            if (notify.isPresent()){
+                notify.get().setIsRead(true);
+                userNotificationRepository.save(notify.get());
+                return SUCCESS;
+            } else throw new Exception(NOT_EXIST);
+        } else throw new Exception(DATA_NULL);
     }
 
     @Override
@@ -95,6 +102,18 @@ public class FcmServiceImpl implements FcmService {
                 userNotificationRepository.deleteAllInBatch(notifications);
                 return SUCCESS;
             }
+        } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
+    public String sendFcmToken(Long uid, String fcm) throws Exception {
+        if (uid != null && StringUtils.isNotBlank(fcm)){
+            UserEntity user = userRepository.findByUid(uid);
+            if (user != null){
+                user.setFcm(fcm);
+                userRepository.save(user);
+                return SUCCESS;
+            } else throw new Exception(USER_NOT_FOUND);
         } else throw new Exception(DATA_NULL);
     }
 }
