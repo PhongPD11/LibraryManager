@@ -19,5 +19,9 @@ public class Book{
     private String major;
     private String language;
     private Long userRate;
-
+    private String ddc;
+    private String status;
+    private Long borrowingPeriod;
+    private String bookLocation;
+    private Long publicationYear;
 }

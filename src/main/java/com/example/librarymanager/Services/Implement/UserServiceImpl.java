@@ -88,14 +88,14 @@ public class UserServiceImpl implements UserService {
         Pattern teacherPattern = Pattern.compile(teacherRegex);
         Long uid = null;
         if (StringUtils.isBlank(register.getEmail()) || StringUtils.isBlank(register.getUsername())
-                || StringUtils.isBlank(register.getPassword()) || StringUtils.isBlank(register.getFullName())
-                || StringUtils.isBlank(register.getMajor()) || register.getClassId() == null) {
+                || StringUtils.isBlank(register.getPassword()) || StringUtils.isBlank(register.getFullName())) {
             throw new Exception("You must fill all!");
         } else {
-
             if (studentPattern.matcher(register.getEmail()).matches()) {
-                uid = Long.parseLong(register.getEmail().substring(0, 8));
-                return Commons.saveUser(userRepository, passwordEncoder, register, uid, mailSender);
+                if (StringUtils.isNotBlank(register.getMajor()) && register.getClassId() != null) {
+                    uid = Long.parseLong(register.getEmail().substring(0, 8));
+                    return Commons.saveUser(userRepository, passwordEncoder, register, uid, mailSender);
+                } else throw new Exception("You must fill all!");
             } else if (teacherPattern.matcher(register.getEmail()).matches()) {
                 return Commons.saveUser(userRepository, passwordEncoder, register, uid, mailSender);
             } else throw new Exception("Email is invalid!");

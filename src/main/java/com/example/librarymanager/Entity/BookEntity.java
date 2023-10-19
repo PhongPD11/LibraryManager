@@ -25,4 +25,7 @@ public class BookEntity {
     private String major;
     private String language;
     private String type;
+    private Long publicationYear;
+    private String ddc;
+    private String status;
 }

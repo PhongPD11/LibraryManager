@@ -21,4 +21,7 @@ public class BookData {
     private String bookLocation;
     private String imageUrl;
     private String major;
+    private Long publicationYear;
+    private String ddc;
+    private String status;
 }

@@ -4,11 +4,15 @@ import com.example.librarymanager.Commons.ResponseCommon;
 import com.example.librarymanager.DTOs.ApiResponse;
 import com.example.librarymanager.DTOs.BookData;
 import com.example.librarymanager.DTOs.BorrowBook;
+import com.example.librarymanager.Repository.BookRepository;
 import com.example.librarymanager.Services.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/library")
@@ -90,15 +94,23 @@ public class BookController {
         }
     }
 
+    @Autowired
+    BookRepository bookRepository;
+
     @GetMapping("/test")
-    public String Test(){
-        return "Update!";
+    public List<String> Test(){
+        List<String> majors = bookRepository.findDistinctMajors();
+        List<String> types = bookRepository.findDistinctTypes();
+        ArrayList<String> field = new ArrayList<String>();
+        field.addAll(majors);
+        field.addAll(types);
+        return field;
     }
 
-    @PostMapping("/borrow/schedule")
-    public ApiResponse scheduleLoan(@RequestBody BorrowBook borrow){
+    @PostMapping("/borrow/register")
+    public ApiResponse registerBorrow(@RequestBody BorrowBook borrow){
         try {
-            return ResponseCommon.response(service.scheduleBorrow(borrow), "Success!");
+            return ResponseCommon.response(service.registerBorrow(borrow), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }
@@ -140,6 +152,15 @@ public class BookController {
     public ApiResponse getFavoriteBooks(@RequestParam Long uid){
         try {
             return ResponseCommon.response(service.favoriteBooks(uid), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
+    @GetMapping("/books/top")
+    public ApiResponse getTopBooks(){
+        try {
+            return ResponseCommon.response(service.topBooks(), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }

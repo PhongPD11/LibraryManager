@@ -58,12 +58,18 @@ public class BookCommons {
         bookInfo.setImageUrl(book.getImageUrl());
         bookInfo.setType(book.getType());
         bookInfo.setLanguage(book.getLanguage());
+        bookInfo.setBookLocation(book.getBookLocation());
+        bookInfo.setDdc(book.getDdc());
+        bookInfo.setStatus(book.getStatus());
+        bookInfo.setPublicationYear(book.getPublicationYear());
+        bookInfo.setBorrowingPeriod(book.getBorrowingPeriod());
 
         if (book.getRated() != null){
             bookInfo.setRated(book.getRated());
             bookInfo.setUserRate(userBookRepository.getUserRate(book.getBookId()));
         } else {
             bookInfo.setRated(0.0);
+            bookInfo.setUserRate(0L);
         }
 
         List<AuthorBookEntity> listAuthorBook = authorBookRepository.findByBookId(book.getBookId());
@@ -122,6 +128,24 @@ public class BookCommons {
                 existBook.setRated(0.0);
             }
             bookRepository.save(existBook);
+        }
+    }
+
+    public static void saveType(TypeRepository typeRepository, String type){
+        Optional<TypeEntity> typeExist = Optional.ofNullable(typeRepository.findByType(type));
+        if (!typeExist.isPresent()){
+            TypeEntity saveType = new TypeEntity();
+            saveType.setType(type);
+            typeRepository.save(saveType);
+        }
+    }
+
+    public static void saveMajor(MajorRepository majorRepository, String major){
+        Optional<MajorEntity> majorExist = Optional.ofNullable(majorRepository.findByMajor(major));
+        if (!majorExist.isPresent()){
+            MajorEntity saveMajor = new MajorEntity();
+            saveMajor.setMajor(major);
+            majorRepository.save(saveMajor);
         }
     }
 

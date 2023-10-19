@@ -32,5 +32,13 @@ public class LibraryManagerApplication
     public void cronJobSch2() throws Exception {
     }
 
+    @Scheduled(cron = "10 * * * * ?")
+    public void cronJobSch3() throws Exception {
+    }
+
+    @Scheduled(cron = "15 * * * * ?")
+    public void cronJobSch4() throws Exception {
+    }
+
 }
 

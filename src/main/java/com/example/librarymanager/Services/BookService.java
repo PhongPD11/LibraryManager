@@ -27,11 +27,12 @@ public interface BookService {
 
     Book getBookDetail(Long bookId) throws Exception;
 
-    UserBookEntity scheduleBorrow(BorrowBook borrow) throws Exception;
+    UserBookEntity registerBorrow(BorrowBook borrow) throws Exception;
     UserBookEntity borrowBook(Long bookId, Long uid) throws Exception;
     String returnBook(Long bookId, Long uid) throws Exception;
     String rateBook(Long bookId, Long uid, Integer star) throws Exception;
     String favoriteBook(Long bookId, Long uid, Boolean isFavorite) throws Exception;
     List<Book> favoriteBooks(Long uid) throws Exception;
+    List<Book> topBooks() throws Exception;
     List<UserBookEntity> userBook(Long uid) throws Exception;
 }

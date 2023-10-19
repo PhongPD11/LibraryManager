@@ -28,7 +28,7 @@ public class Commons {
     public static final String EXIST_USERNAME = "existUsername";
     public static final String EXIST_EMAIL = "existEmail";
     public static final String EXIST = "exist";
-    public static final String EXIST_LOAN = "existLoan";
+    public static final String EXIST_BORROW = "existBorrow";
     public static final String NOT_EXIST = "notExist";
     public static final String NOT_AVAILABLE = "notAvailable";
     public static final String DATA_NULL = "dataNull";
@@ -36,10 +36,11 @@ public class Commons {
     public static final String USER_NOT_FOUND = "userNotFound";
     public static final String SUCCESS = "success";
     public static final String UID_NULL = "uidNull";
-    public static final String SCHEDULE_BORROW = "scheduleBorrow";
+    public static final String REGISTER_BORROW = "registerBorrow";
     public static final String BORROWING = "borrowing";
     public static final String BORROW_RETURNED = "borrowReturned";
     public static final String BORROW_EXPIRED = "borrowExpired";
+    public static final String BORROW_REGISTER_EXPIRED = "borrowRegisterExpired";
     public static final String INVALID = "invalid";
     public static final String EMPTY = "empty";
     public static final String SDK_FIREBASE = "E:\\Demo BE\\LibraryManager\\src\\main\\resources\\library-3e026-firebase-adminsdk-krna8-619460d56d.json";
@@ -72,8 +73,10 @@ public class Commons {
                 existUserEmail.setActiveCode(code);
                 existUserEmail.setUsername(register.getUsername());
                 existUserEmail.setFullName(register.getFullName());
-                existUserEmail.setMajor(register.getMajor());
-                existUserEmail.setClassId(register.getClassId());
+                if (StringUtils.isNotBlank(register.getMajor()) && register.getClassId() != null) {
+                    existUserEmail.setMajor(register.getMajor());
+                    existUserEmail.setClassId(register.getClassId());
+                }
                 userRepository.save(existUserEmail);
                 sendActiveCode(mailSender, register.getEmail(), code, existUserEmail.getFullName());
                 return SUCCESS;

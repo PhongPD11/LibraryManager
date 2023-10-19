@@ -10,11 +10,10 @@ import javax.persistence.*;
 @Getter
 @Setter
 @Data
-@Table(name = "type_book")
-public class TypeBookEntity {
+@Table(name = "major")
+public class MajorEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long bookId;
-    private Long typeId;
+    private String major;
 }

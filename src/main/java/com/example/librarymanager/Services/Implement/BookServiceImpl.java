@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static com.example.librarymanager.Commons.BookCommons.BOOK_NOT_FOUND;
+import static com.example.librarymanager.Commons.BookCommons.showBooksInfo;
 import static com.example.librarymanager.Commons.Commons.*;
 
 @Service
@@ -41,7 +42,7 @@ public class BookServiceImpl implements BookService {
     TypeRepository typeRepository;
 
     @Autowired
-    TypeBookRepository typeBookRepository;
+    MajorRepository majorRepository;
 
     @Autowired
     AuthorBookRepository authorBookRepository;
@@ -64,7 +65,9 @@ public class BookServiceImpl implements BookService {
                 StringUtils.isBlank(book.getName()) || StringUtils.isBlank(book.getName()) ||
                 StringUtils.isBlank(book.getLanguage()) || StringUtils.isBlank(book.getType()) ||
                 StringUtils.isBlank(book.getMajor()) || ObjectUtils.isEmpty(book.getAuthor()) ||
-                book.getBorrowingPeriod() == null || StringUtils.isBlank(book.getBookLocation())) {
+                StringUtils.isBlank(book.getDdc()) || book.getPublicationYear() == null ||
+                book.getBorrowingPeriod() == null || StringUtils.isBlank(book.getBookLocation()) ||
+                StringUtils.isBlank(book.getStatus())) {
             throw new Exception("Please fill all information!");
         } else {
             Optional<BookEntity> existBook = Optional.ofNullable(bookRepository.findByBookId(book.getBookId()));
@@ -72,13 +75,21 @@ public class BookServiceImpl implements BookService {
                 throw new Exception("Book exist!");
             } else {
                 saveBook.setName(book.getName());
-                saveBook.setMajor(book.getMajor());
                 saveBook.setBookId(book.getBookId());
                 saveBook.setAmount(book.getAmount());
                 saveBook.setBorrowingPeriod(book.getBorrowingPeriod());
                 saveBook.setBookLocation(book.getBookLocation());
-                saveBook.setType(book.getType());
                 saveBook.setLanguage(book.getLanguage());
+                saveBook.setDdc(book.getDdc());
+                saveBook.setPublicationYear(book.getPublicationYear());
+                saveBook.setStatus(book.getStatus());
+                saveBook.setRated(0.0);
+
+                BookCommons.saveMajor(majorRepository, book.getMajor());
+                BookCommons.saveType(typeRepository, book.getType());
+
+                saveBook.setType(book.getType());
+                saveBook.setMajor(book.getMajor());
 
                 BookCommons.saveAuthorBook(book.getAuthor(), book.getBookId(), authorBookRepository, authorRepository);
 //                BookCommons.saveTypeBook(book.getType(), book.getBookId(), typeBookRepository, typeRepository);
@@ -109,9 +120,7 @@ public class BookServiceImpl implements BookService {
                 newType.setType(typeName);
                 typeRepository.save(newType);
                 return SUCCESS;
-            } else {
-                throw new Exception(EXIST);
-            }
+            } else throw new Exception(EXIST);
         } else throw new Exception(DATA_NULL);
     }
 
@@ -126,7 +135,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public UserBookEntity scheduleBorrow(BorrowBook borrow) throws Exception {
+    public UserBookEntity registerBorrow(BorrowBook borrow) throws Exception {
         if (borrow.getBookId() != null && borrow.getUid() != null && borrow.getIsDelivery() != null) {
             Long bookId = borrow.getBookId();
             Long uid = borrow.getUid();
@@ -134,9 +143,27 @@ public class BookServiceImpl implements BookService {
             if (existBook.isPresent()) {
                 Long amount = existBook.get().getAmount();
                 if (amount > 0) {
-                    Optional<UserBookEntity> existLoan = Optional.ofNullable(userBookRepository.findByBookIdAndUid(bookId, uid));
-                    if (existLoan.isPresent()) {
-                        throw new Exception(EXIST_LOAN);
+                    Optional<UserBookEntity> existUserBook = Optional.ofNullable(userBookRepository.findByBookIdAndUid(bookId, uid));
+                    if (existUserBook.isPresent()) {
+                        if (Objects.equals(existUserBook.get().getStatus(), BORROW_RETURNED) || StringUtils.isBlank(existUserBook.get().getStatus())) {
+                            UserBookEntity reBorrow = existUserBook.get();
+                            existBook.get().setAmount(amount - 1L);
+                            bookRepository.save(existBook.get());
+                            reBorrow.setBookId(bookId);
+                            reBorrow.setUid(uid);
+                            reBorrow.setIsDelivery(borrow.getIsDelivery());
+                            if (borrow.getIsDelivery()) {
+                                if (StringUtils.isNotBlank(borrow.getAddress())) {
+                                    reBorrow.setAddress(borrow.getAddress());
+                                } else throw new Exception(DATA_NULL);
+                            }
+                            LocalDateTime currentTime = LocalDateTime.now();
+                            reBorrow.setCreateAt(currentTime);
+                            reBorrow.setStatus(REGISTER_BORROW);
+                            userBookRepository.save(reBorrow);
+                            return reBorrow;
+                        }
+                        throw new Exception(EXIST_BORROW);
                     } else {
                         existBook.get().setAmount(amount - 1L);
                         bookRepository.save(existBook.get());
@@ -151,7 +178,7 @@ public class BookServiceImpl implements BookService {
                         }
                         LocalDateTime currentTime = LocalDateTime.now();
                         newBorrow.setCreateAt(currentTime);
-                        newBorrow.setStatus(SCHEDULE_BORROW);
+                        newBorrow.setStatus(REGISTER_BORROW);
                         userBookRepository.save(newBorrow);
                         return newBorrow;
                     }
@@ -204,12 +231,14 @@ public class BookServiceImpl implements BookService {
             Optional<BookEntity> existBook = Optional.ofNullable(bookRepository.findByBookId(bookId));
             LocalDateTime currentTime = LocalDateTime.now();
             if (existBorrow.isPresent() && existBook.isPresent()) {
-                existBorrow.get().setReturnedAt(currentTime);
-                existBorrow.get().setStatus(BORROW_RETURNED);
-                existBook.get().setAmount(existBook.get().getAmount() + 1L);
-                userBookRepository.save(existBorrow.get());
-                bookRepository.save(existBook.get());
-                return SUCCESS;
+                if (!Objects.equals(existBorrow.get().getStatus(), BORROW_RETURNED)){
+                    existBorrow.get().setReturnedAt(currentTime);
+                    existBorrow.get().setStatus(BORROW_RETURNED);
+                    existBook.get().setAmount(existBook.get().getAmount() + 1L);
+                    userBookRepository.save(existBorrow.get());
+                    bookRepository.save(existBook.get());
+                    return SUCCESS;
+                } else throw new Exception("Book had returned");
             } else throw new Exception(NOT_EXIST);
         } else throw new Exception(DATA_NULL);
     }
@@ -279,6 +308,14 @@ public class BookServiceImpl implements BookService {
                 return BookCommons.showBooksInfo(favoriteBooks, authorBookRepository, authorRepository, userBookRepository);
             }
         } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
+    public List<Book> topBooks() throws Exception {
+        List<BookEntity> topBooks = bookRepository.getTopBooks();
+        if (!topBooks.isEmpty()){
+            return showBooksInfo(topBooks, authorBookRepository, authorRepository, userBookRepository);
+        } else throw new Exception(NOT_EXIST);
     }
 
     @Override
