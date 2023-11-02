@@ -87,7 +87,7 @@ public class JwtAuthenFilter extends OncePerRequestFilter {
                 "/verify", "/email",  "/library/books", "/library/books/author",
                 "/profile","/library/favorites", "/library/favorite", "/library/userbook",
                 "/library/rate" , "/notification/read" , "/notification/fcm", "/library/borrow/register",
-                "/library/books/top"
+                "/library/books/top","/schedule"
         );
         for (String path : urls) {
             if (uri.startsWith(path)) {

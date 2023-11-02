@@ -61,7 +61,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(
                         "/library/test", "/notification", "/notification/delete", "/library/books", "/library/books/author", "/profile",
                         "/library/favorites", "/library/favorite", "/library/userbook", "/notification/read", "/notification/fcm", "/library/rate",
-                        "/library/borrow/register", "/library/books/top"
+                        "/library/borrow/register", "/library/books/top", "/schedule"
                 )
                 .permitAll()
                 .anyRequest().authenticated()

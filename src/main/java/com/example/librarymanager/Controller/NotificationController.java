@@ -3,6 +3,7 @@ package com.example.librarymanager.Controller;
 import com.example.librarymanager.Commons.ResponseCommon;
 import com.example.librarymanager.DTOs.ApiResponse;
 import com.example.librarymanager.DTOs.PnsRequest;
+import com.example.librarymanager.DTOs.UserNotify;
 import com.example.librarymanager.Services.FcmService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,14 @@ public class NotificationController {
     public ApiResponse sendNotifyToAll(@RequestBody PnsRequest pnsRequest) {
         try {
             return ResponseCommon.response(fcmService.sendNotifyToAll(pnsRequest), "Success" );
+        } catch (Exception e){
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+    @PostMapping("/user")
+    public ApiResponse sendNotifyToUser(@RequestBody UserNotify pnsRequest) {
+        try {
+            return ResponseCommon.response(fcmService.sendNotifyToUser(pnsRequest), "Success" );
         } catch (Exception e){
             return ResponseCommon.response(null, e.getMessage());
         }

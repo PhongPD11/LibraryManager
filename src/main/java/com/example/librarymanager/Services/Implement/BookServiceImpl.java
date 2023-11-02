@@ -5,10 +5,7 @@ import com.example.librarymanager.Commons.Commons;
 import com.example.librarymanager.DTOs.Book;
 import com.example.librarymanager.DTOs.BookData;
 import com.example.librarymanager.DTOs.BorrowBook;
-import com.example.librarymanager.Entity.AuthorBookEntity;
-import com.example.librarymanager.Entity.BookEntity;
-import com.example.librarymanager.Entity.TypeEntity;
-import com.example.librarymanager.Entity.UserBookEntity;
+import com.example.librarymanager.Entity.*;
 import com.example.librarymanager.Repository.*;
 import com.example.librarymanager.Services.BookService;
 import org.apache.commons.lang3.ObjectUtils;
@@ -96,7 +93,7 @@ public class BookServiceImpl implements BookService {
 
                 if (file != null) {
                     String url = Commons.uploadImage(file, "book_image/");
-                    if (StringUtils.isNotBlank(url)){
+                    if (StringUtils.isNotBlank(url)) {
                         saveBook.setImageUrl(url);
                         book.setImageUrl(url);
                     }
@@ -231,7 +228,7 @@ public class BookServiceImpl implements BookService {
             Optional<BookEntity> existBook = Optional.ofNullable(bookRepository.findByBookId(bookId));
             LocalDateTime currentTime = LocalDateTime.now();
             if (existBorrow.isPresent() && existBook.isPresent()) {
-                if (!Objects.equals(existBorrow.get().getStatus(), BORROW_RETURNED)){
+                if (!Objects.equals(existBorrow.get().getStatus(), BORROW_RETURNED)) {
                     existBorrow.get().setReturnedAt(currentTime);
                     existBorrow.get().setStatus(BORROW_RETURNED);
                     existBook.get().setAmount(existBook.get().getAmount() + 1L);
@@ -297,7 +294,7 @@ public class BookServiceImpl implements BookService {
             } else {
                 ArrayList<BookEntity> favoriteBooks = new ArrayList<>();
                 for (UserBookEntity book : listBook) {
-                    if (book.getIsFavorite()) {
+                    if (book.getIsFavorite() != null && book.getIsFavorite()) {
                         Long bookId = book.getBookId();
                         BookEntity bookExist = bookRepository.findByBookId(bookId);
                         if (bookExist != null) {
@@ -313,14 +310,14 @@ public class BookServiceImpl implements BookService {
     @Override
     public List<Book> topBooks() throws Exception {
         List<BookEntity> topBooks = bookRepository.getTopBooks();
-        if (!topBooks.isEmpty()){
+        if (!topBooks.isEmpty()) {
             return showBooksInfo(topBooks, authorBookRepository, authorRepository, userBookRepository);
         } else throw new Exception(NOT_EXIST);
     }
 
     @Override
     public List<UserBookEntity> userBook(Long uid) throws Exception {
-        if (uid !=null ){
+        if (uid != null) {
             return userBookRepository.findByUid(uid);
         } else throw new Exception(DATA_NULL);
     }
@@ -404,9 +401,30 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public ArrayList<Book> getBookByAuthorId(Long authorId) throws Exception {
+    public ArrayList<Book> getBookByAuthor(String authorName, Long authorId) throws Exception {
         if (authorId == null) {
-            throw new Exception("Fill author ID!");
+            if (StringUtils.isBlank(authorName)) {
+                throw new Exception(DATA_NULL);
+            } else {
+                List<AuthorEntity> listAuths = authorRepository.findByAuthorName(authorName);
+                if (listAuths.isEmpty()) {
+                    throw new Exception("Author not found!");
+                } else {
+                    ArrayList<BookEntity> listBooksEnt = new ArrayList<>();
+                    for (AuthorEntity auth : listAuths) {
+                        List<AuthorBookEntity> listBooks = authorBookRepository.findByAuthorId(auth.getAuthorId());
+                        if (!listBooks.isEmpty()) {
+                            for (AuthorBookEntity book : listBooks) {
+                                listBooksEnt.add(bookRepository.findByBookId(book.getBookId()));
+                            }
+                        }
+                    }
+                    if (listBooksEnt.isEmpty())
+                        throw new Exception("Author not found!");
+                    else
+                        return BookCommons.showBooksInfo(listBooksEnt, authorBookRepository, authorRepository, userBookRepository);
+                }
+            }
         } else {
             List<AuthorBookEntity> listBooks = authorBookRepository.findByAuthorId(authorId);
             if (listBooks.isEmpty()) {
@@ -441,6 +459,48 @@ public class BookServiceImpl implements BookService {
             }
         }
         return finalResults;
+    }
+
+    @Override
+    public ArrayList<Book> getBookByType(String type) throws Exception {
+        if (StringUtils.isBlank(type)) {
+            throw new Exception(DATA_NULL);
+        } else {
+            List<BookEntity> listBooks = bookRepository.findByType(type);
+            if (listBooks.isEmpty()) {
+                throw new Exception(NOT_EXIST);
+            } else {
+                return BookCommons.showBooksInfo(listBooks, authorBookRepository, authorRepository, userBookRepository);
+            }
+        }
+    }
+
+    @Override
+    public ArrayList<Book> getBookByMajor(String major) throws Exception {
+        if (StringUtils.isBlank(major)) {
+            throw new Exception(DATA_NULL);
+        } else {
+            List<BookEntity> listBooks = bookRepository.findByMajor(major);
+            if (listBooks.isEmpty()) {
+                throw new Exception(NOT_EXIST);
+            } else {
+                return BookCommons.showBooksInfo(listBooks, authorBookRepository, authorRepository, userBookRepository);
+            }
+        }
+    }
+
+    @Override
+    public ArrayList<Book> getByLanguage(String language) throws Exception {
+        if (StringUtils.isBlank(language)) {
+            throw new Exception(DATA_NULL);
+        } else {
+            List<BookEntity> listBooks = bookRepository.findByLanguage(language);
+            if (listBooks.isEmpty()) {
+                throw new Exception(NOT_EXIST);
+            } else {
+                return BookCommons.showBooksInfo(listBooks, authorBookRepository, authorRepository, userBookRepository);
+            }
+        }
     }
 
 }

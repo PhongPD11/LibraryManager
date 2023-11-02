@@ -11,6 +11,7 @@ import java.util.List;
 public interface BookRepository extends JpaRepository<BookEntity, Long> {
     List<BookEntity> findByName(String name);
     List<BookEntity> findByMajor(String major);
+    List<BookEntity> findByLanguage(String language);
     List<BookEntity> findByType(String type);
     BookEntity findByBookId(Long bookId);
     List<BookEntity> findByNameIgnoreCaseStartsWith(String name);
@@ -21,7 +22,7 @@ public interface BookRepository extends JpaRepository<BookEntity, Long> {
     @Query("SELECT DISTINCT e.major FROM BookEntity e")
     List<String> findDistinctMajors();
 
-    @Query(nativeQuery = true,value = "select * from book ORDER BY rated DESC LIMIT 10")
+    @Query(nativeQuery = true,value = "select * from book where rated > 0.0 ORDER BY rated DESC LIMIT 10")
     List<BookEntity> getTopBooks();
 
 }

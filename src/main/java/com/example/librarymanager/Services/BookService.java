@@ -19,9 +19,12 @@ public interface BookService {
 
     String deleteBook(Long bookId) throws Exception;
 
-    ArrayList<Book> getBookByAuthorId(Long authorId) throws Exception;
+    ArrayList<Book> getBookByAuthor(String authorName, Long authorId) throws Exception;
 
     ArrayList<Object> getBookBySearching(String book, String author, Long authorId) throws Exception;
+    ArrayList<Book> getBookByType(String type) throws Exception;
+    ArrayList<Book> getBookByMajor(String major) throws Exception;
+    ArrayList<Book> getByLanguage(String language) throws Exception;
 
     String addType(String type) throws Exception;
 

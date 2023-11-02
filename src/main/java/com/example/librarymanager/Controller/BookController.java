@@ -7,6 +7,7 @@ import com.example.librarymanager.DTOs.BorrowBook;
 import com.example.librarymanager.Repository.BookRepository;
 import com.example.librarymanager.Services.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,8 +23,38 @@ public class BookController {
     BookService service;
 
     @GetMapping("/books")
-    public ApiResponse getAllBooks() {
-        return ResponseCommon.response(service.getAllBooks(), "Success!");
+    public ApiResponse getAllBooks(
+            @RequestParam(value = "authorName", required = false) String authorName,
+            @RequestParam(value = "authorId", required = false) Long authorId,
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "language", required = false) String language,
+            @RequestParam(value = "major", required = false) String major)
+    {
+        if (authorId != null || StringUtils.isNotBlank(authorName)) {
+            try {
+                return ResponseCommon.response(service.getBookByAuthor(authorName, authorId), "Success!");
+            } catch (Exception e) {
+                return ResponseCommon.response(null, e.getMessage());
+            }
+        } else if (StringUtils.isNotBlank(type)) {
+            try {
+                return ResponseCommon.response(service.getBookByType(type), "Success!");
+            } catch (Exception e) {
+                return ResponseCommon.response(null, e.getMessage());
+            }
+        } else if (StringUtils.isNotBlank(major)) {
+            try {
+                return ResponseCommon.response(service.getBookByMajor(major), "Success!");
+            } catch (Exception e) {
+                return ResponseCommon.response(null, e.getMessage());
+            }
+        } else if (StringUtils.isNotBlank(language)) {
+            try {
+                return ResponseCommon.response(service.getByLanguage(language), "Success!");
+            } catch (Exception e) {
+                return ResponseCommon.response(null, e.getMessage());
+            }
+        } else return ResponseCommon.response(service.getAllBooks(), "Success!");
     }
 
     @PostMapping("/book")
@@ -85,20 +116,11 @@ public class BookController {
         }
     }
 
-    @GetMapping("/books/author")
-    public ApiResponse getAllBooks(@RequestParam(value = "authorId") Long authorId) {
-        try {
-            return ResponseCommon.response(service.getBookByAuthorId(authorId), "Success!");
-        } catch (Exception e) {
-            return ResponseCommon.response(null, e.getMessage());
-        }
-    }
-
     @Autowired
     BookRepository bookRepository;
 
     @GetMapping("/test")
-    public List<String> Test(){
+    public List<String> Test() {
         List<String> majors = bookRepository.findDistinctMajors();
         List<String> types = bookRepository.findDistinctTypes();
         ArrayList<String> field = new ArrayList<String>();
@@ -108,23 +130,25 @@ public class BookController {
     }
 
     @PostMapping("/borrow/register")
-    public ApiResponse registerBorrow(@RequestBody BorrowBook borrow){
+    public ApiResponse registerBorrow(@RequestBody BorrowBook borrow) {
         try {
             return ResponseCommon.response(service.registerBorrow(borrow), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }
     }
+
     @GetMapping("/borrow")
-    public ApiResponse loanBook(@RequestParam Long bookId, Long uid){
+    public ApiResponse loanBook(@RequestParam Long bookId, Long uid) {
         try {
             return ResponseCommon.response(service.borrowBook(bookId, uid), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }
     }
+
     @GetMapping("/borrow/return")
-    public ApiResponse returnBook(@RequestParam Long bookId, Long uid){
+    public ApiResponse returnBook(@RequestParam Long bookId, Long uid) {
         try {
             return ResponseCommon.response(service.returnBook(bookId, uid), "Success!");
         } catch (Exception e) {
@@ -133,23 +157,25 @@ public class BookController {
     }
 
     @GetMapping("/rate")
-    public ApiResponse voteBook(@RequestParam Long bookId, Long uid, Integer star){
+    public ApiResponse voteBook(@RequestParam Long bookId, Long uid, Integer star) {
         try {
             return ResponseCommon.response(service.rateBook(bookId, uid, star), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }
     }
+
     @GetMapping("/favorite")
-    public ApiResponse favoriteBook(@RequestParam Long bookId, Long uid, Boolean isFavorite){
+    public ApiResponse favoriteBook(@RequestParam Long bookId, Long uid, Boolean isFavorite) {
         try {
             return ResponseCommon.response(service.favoriteBook(bookId, uid, isFavorite), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }
     }
+
     @GetMapping("/favorites")
-    public ApiResponse getFavoriteBooks(@RequestParam Long uid){
+    public ApiResponse getFavoriteBooks(@RequestParam Long uid) {
         try {
             return ResponseCommon.response(service.favoriteBooks(uid), "Success!");
         } catch (Exception e) {
@@ -158,7 +184,7 @@ public class BookController {
     }
 
     @GetMapping("/books/top")
-    public ApiResponse getTopBooks(){
+    public ApiResponse getTopBooks() {
         try {
             return ResponseCommon.response(service.topBooks(), "Success!");
         } catch (Exception e) {
@@ -167,7 +193,7 @@ public class BookController {
     }
 
     @GetMapping("/userbook")
-    public ApiResponse getUserBook(@RequestParam Long uid){
+    public ApiResponse getUserBook(@RequestParam Long uid) {
         try {
             return ResponseCommon.response(service.userBook(uid), "Success!");
         } catch (Exception e) {

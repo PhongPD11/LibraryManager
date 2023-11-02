@@ -25,18 +25,22 @@ public class LibraryManagerApplication
     }
 
     @Scheduled(cron = "0 * * * * ?")
+    public void cronJobUserSch() throws Exception {
+    }
+
+    @Scheduled(cron = "0 0 * * * ?")
     public void cronJobSch() throws Exception {
     }
 
-    @Scheduled(cron = "5 * * * * ?")
+    @Scheduled(cron = "5 0 * * * ?")
     public void cronJobSch2() throws Exception {
     }
 
-    @Scheduled(cron = "10 * * * * ?")
+    @Scheduled(cron = "10 0 * * * ?")
     public void cronJobSch3() throws Exception {
     }
 
-    @Scheduled(cron = "15 * * * * ?")
+    @Scheduled(cron = "15 0 * * * ?")
     public void cronJobSch4() throws Exception {
     }
 

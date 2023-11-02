@@ -1,7 +1,6 @@
 package com.example.librarymanager.Repository;
 
 import com.example.librarymanager.Entity.AuthorBookEntity;
-import com.example.librarymanager.Entity.AuthorEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

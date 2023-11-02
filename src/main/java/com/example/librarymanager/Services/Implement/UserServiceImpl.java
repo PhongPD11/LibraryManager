@@ -5,9 +5,11 @@ import com.example.librarymanager.DTOs.Login;
 import com.example.librarymanager.DTOs.Profile;
 import com.example.librarymanager.DTOs.Register;
 import com.example.librarymanager.Entity.UserEntity;
+import com.example.librarymanager.Entity.UserScheduleEntity;
 import com.example.librarymanager.Jwt.JwtTokenProvider;
 import com.example.librarymanager.Jwt.UserDetail;
 import com.example.librarymanager.Repository.UserRepository;
+import com.example.librarymanager.Repository.UserScheduleRepository;
 import com.example.librarymanager.Services.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +22,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import static com.example.librarymanager.Commons.Commons.*;
@@ -38,6 +42,9 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     @Autowired
+    private UserScheduleRepository userScheduleRepository;
+
+    @Autowired
     PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -45,37 +52,37 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Profile login(Login login) throws Exception {
-        if (login.getUsername().isEmpty() || login.getPassword().isEmpty()){
+        if (login.getUsername().isEmpty() || login.getPassword().isEmpty()) {
             throw new Exception("Fill your Username & Password!");
         } else {
             UserEntity user = userRepository.findByUsername(login.getUsername());
-            if (user != null){
-                    if (user.getIsEnabled()) {
-                        Authentication authentication = authenticationManager.authenticate(
-                                new UsernamePasswordAuthenticationToken(
-                                        login.getUsername(),
-                                        login.getPassword()
-                                )
-                        );
-                        if (authentication.isAuthenticated()) {
-                            SecurityContextHolder.getContext().setAuthentication(authentication);
-                            if (StringUtils.isNotBlank(login.getFcm())){
-                                user.setFcm(login.getFcm());
-                            }
-                            userRepository.save(user);
-                            String authenToken = tokenProvider.generateToken(((UserDetail) authentication.getPrincipal()).getUser());
-                            Profile profile = new Profile();
-                            profile.setFcm(login.getFcm());
-                            profile.setToken(authenToken);
-                            profile.setUid(user.getUid());
-                            profile.setMajor(user.getMajor());
-                            profile.setEmail(user.getEmail());
-                            profile.setClassId(user.getClassId());
-                            profile.setFullName(user.getFullName());
-                            profile.setImageUrl(user.getImageUrl());
-                            return profile;
-                        } else throw new Exception(INVALID_PASSWORD);
-                    } else throw new Exception("User is not verify.");
+            if (user != null) {
+                if (user.getIsEnabled()) {
+                    Authentication authentication = authenticationManager.authenticate(
+                            new UsernamePasswordAuthenticationToken(
+                                    login.getUsername(),
+                                    login.getPassword()
+                            )
+                    );
+                    if (authentication.isAuthenticated()) {
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        if (StringUtils.isNotBlank(login.getFcm())) {
+                            user.setFcm(login.getFcm());
+                        }
+                        userRepository.save(user);
+                        String authenToken = tokenProvider.generateToken(((UserDetail) authentication.getPrincipal()).getUser());
+                        Profile profile = new Profile();
+                        profile.setFcm(login.getFcm());
+                        profile.setToken(authenToken);
+                        profile.setUid(user.getUid());
+                        profile.setMajor(user.getMajor());
+                        profile.setEmail(user.getEmail());
+                        profile.setClassId(user.getClassId());
+                        profile.setFullName(user.getFullName());
+                        profile.setImageUrl(user.getImageUrl());
+                        return profile;
+                    } else throw new Exception(INVALID_PASSWORD);
+                } else throw new Exception("User is not verify.");
             } else throw new Exception(USER_NOT_FOUND);
         }
     }
@@ -106,7 +113,7 @@ public class UserServiceImpl implements UserService {
     public String confirm(Long activeCode, String email, String fcm) throws Exception {
         UserEntity user = userRepository.findByEmail(email);
         if (user != null) {
-            if(Objects.equals(user.getActiveCode(), activeCode)) {
+            if (Objects.equals(user.getActiveCode(), activeCode)) {
                 user.setIsEnabled(true);
                 user.setFcm(fcm);
                 userRepository.save(user);
@@ -128,12 +135,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Profile getProfile(Long uid) throws Exception {
-        if (uid != null){
+        if (uid != null) {
             UserEntity user = userRepository.findByUid(uid);
-            if (user != null){
+            if (user != null) {
                 Profile profile = new Profile();
                 profile.setUid(user.getUid());
                 profile.setMajor(user.getMajor());
+                profile.setFcm(user.getFcm());
                 profile.setEmail(user.getEmail());
                 profile.setClassId(user.getClassId());
                 profile.setFullName(user.getFullName());
@@ -156,7 +164,7 @@ public class UserServiceImpl implements UserService {
 
                 if (file != null) {
                     String url = Commons.uploadImage(file, "avatar/");
-                    if (StringUtils.isNotBlank(url)){
+                    if (StringUtils.isNotBlank(url)) {
                         user.setImageUrl(url);
                         user.setImageUrl(url);
                     }
@@ -165,5 +173,57 @@ public class UserServiceImpl implements UserService {
                 return user;
             } else throw new Exception(USER_NOT_FOUND);
         } else throw new Exception(UID_NULL);
+    }
+
+    @Override
+    public List<UserScheduleEntity> getSchedules(Long uid) throws Exception {
+        List<UserScheduleEntity> schedules = userScheduleRepository.findByUid(uid);
+        if (!schedules.isEmpty()) {
+            return schedules;
+        }
+        throw new Exception(NOT_EXIST);
+    }
+
+    @Override
+    public String addSchedule(UserScheduleEntity schedule) throws Exception {
+        if (schedule.getUid() != null &&
+                schedule.getHourTime() != null &&
+                schedule.getMinuteTime() != null &&
+                schedule.getRepeat() != null &&
+                schedule.getIsOn() != null) {
+            userScheduleRepository.save(schedule);
+            return SUCCESS;
+        } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
+    public UserScheduleEntity updateSchedule(UserScheduleEntity schedule) throws Exception {
+        if (schedule.getUid() != null &&
+                schedule.getId() != null &&
+                schedule.getHourTime() != null &&
+                schedule.getMinuteTime() != null &&
+                schedule.getRepeat() != null &&
+                schedule.getIsOn() != null) {
+            Optional<UserScheduleEntity> existSchedule = userScheduleRepository.findById(schedule.getId());
+            if (existSchedule.isPresent()) {
+                existSchedule.get().setRepeat(schedule.getRepeat());
+                existSchedule.get().setHourTime(schedule.getHourTime());
+                existSchedule.get().setMinuteTime(schedule.getMinuteTime());
+                existSchedule.get().setIsOn(schedule.getIsOn());
+                userScheduleRepository.save(existSchedule.get());
+                return existSchedule.get();
+            } else throw new Exception(NOT_EXIST);
+        } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
+    public String deleteSchedule(Long id) throws Exception {
+        if (id != null) {
+            Optional<UserScheduleEntity> existSchedule = userScheduleRepository.findById(id);
+            if (existSchedule.isPresent()){
+                userScheduleRepository.delete(existSchedule.get());
+                return SUCCESS;
+            } else throw new Exception(NOT_EXIST);
+        } else throw new Exception(DATA_NULL);
     }
 }

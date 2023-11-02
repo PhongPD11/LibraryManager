@@ -1,7 +1,11 @@
 package com.example.librarymanager.Controller;
 
 import com.example.librarymanager.Commons.ResponseCommon;
-import com.example.librarymanager.DTOs.*;
+import com.example.librarymanager.DTOs.ApiResponse;
+import com.example.librarymanager.DTOs.Login;
+import com.example.librarymanager.DTOs.Profile;
+import com.example.librarymanager.DTOs.Register;
+import com.example.librarymanager.Entity.UserScheduleEntity;
 import com.example.librarymanager.Services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,22 +52,25 @@ public class UserController {
     @GetMapping("/verify")
     public Object userConfirm(@RequestParam Long activeCode, String email, String fcm) {
         try {
-            return ResponseCommon.response(service.confirm(activeCode, email,fcm), "Success!");
+            return ResponseCommon.response(service.confirm(activeCode, email, fcm), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }
     }
 
     @GetMapping("/profile")
-    public ApiResponse userConfirm(@RequestParam Long uid) {
+    public ApiResponse getUser(@RequestParam Long uid) {
         try {
             return ResponseCommon.response(service.getProfile(uid), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }
     }
+
     @PutMapping("/profile")
-    public ApiResponse userConfirm(@RequestPart("model") String json, @RequestPart("file") MultipartFile file) {
+    public ApiResponse editUser(
+            @RequestPart("model") String json,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             Profile dataModel = mapper.readValue(json, Profile.class);
@@ -72,6 +79,34 @@ public class UserController {
             return ResponseCommon.response(null, e.getMessage());
         }
     }
+
+    @PutMapping("/schedule")
+    public ApiResponse updateSchedule(@RequestBody UserScheduleEntity schedule) {
+        try {
+            return ResponseCommon.response(service.updateSchedule(schedule), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
+    @PostMapping("/schedule")
+    public ApiResponse addSchedule(@RequestBody UserScheduleEntity schedule) {
+        try {
+            return ResponseCommon.response(service.addSchedule(schedule), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/schedule")
+    public ApiResponse addSchedule(@RequestParam Long id) {
+        try {
+            return ResponseCommon.response(service.deleteSchedule(id), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
 
 //    @PutMapping("/profile/edit")
 //    public ApiResponse editProfile(@RequestBody )
