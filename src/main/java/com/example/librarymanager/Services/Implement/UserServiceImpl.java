@@ -1,13 +1,18 @@
 package com.example.librarymanager.Services.Implement;
 
 import com.example.librarymanager.Commons.Commons;
+import com.example.librarymanager.DTOs.ContactRequest;
 import com.example.librarymanager.DTOs.Login;
 import com.example.librarymanager.DTOs.Profile;
 import com.example.librarymanager.DTOs.Register;
+import com.example.librarymanager.Entity.ContactEntity;
+import com.example.librarymanager.Entity.UserContactEntity;
 import com.example.librarymanager.Entity.UserEntity;
 import com.example.librarymanager.Entity.UserScheduleEntity;
 import com.example.librarymanager.Jwt.JwtTokenProvider;
 import com.example.librarymanager.Jwt.UserDetail;
+import com.example.librarymanager.Repository.ContactRepository;
+import com.example.librarymanager.Repository.UserContactRepository;
 import com.example.librarymanager.Repository.UserRepository;
 import com.example.librarymanager.Repository.UserScheduleRepository;
 import com.example.librarymanager.Services.UserService;
@@ -22,6 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -50,6 +56,12 @@ public class UserServiceImpl implements UserService {
     @Autowired
     JavaMailSender mailSender;
 
+    @Autowired
+    private UserContactRepository userContactRepository;
+
+    @Autowired
+    private ContactRepository contactRepository;
+
     @Override
     public Profile login(Login login) throws Exception {
         if (login.getUsername().isEmpty() || login.getPassword().isEmpty()) {
@@ -57,13 +69,8 @@ public class UserServiceImpl implements UserService {
         } else {
             UserEntity user = userRepository.findByUsername(login.getUsername());
             if (user != null) {
-                if (user.getIsEnabled()) {
-                    Authentication authentication = authenticationManager.authenticate(
-                            new UsernamePasswordAuthenticationToken(
-                                    login.getUsername(),
-                                    login.getPassword()
-                            )
-                    );
+                if (user.getIsEnabled() || user.getIsAdmin()) {
+                    Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(login.getUsername(), login.getPassword()));
                     if (authentication.isAuthenticated()) {
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                         if (StringUtils.isNotBlank(login.getFcm())) {
@@ -94,8 +101,7 @@ public class UserServiceImpl implements UserService {
         Pattern studentPattern = Pattern.compile(studentRegex);
         Pattern teacherPattern = Pattern.compile(teacherRegex);
         Long uid = null;
-        if (StringUtils.isBlank(register.getEmail()) || StringUtils.isBlank(register.getUsername())
-                || StringUtils.isBlank(register.getPassword()) || StringUtils.isBlank(register.getFullName())) {
+        if (StringUtils.isBlank(register.getEmail()) || StringUtils.isBlank(register.getUsername()) || StringUtils.isBlank(register.getPassword()) || StringUtils.isBlank(register.getFullName())) {
             throw new Exception("You must fill all!");
         } else {
             if (studentPattern.matcher(register.getEmail()).matches()) {
@@ -186,11 +192,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String addSchedule(UserScheduleEntity schedule) throws Exception {
-        if (schedule.getUid() != null &&
-                schedule.getHourTime() != null &&
-                schedule.getMinuteTime() != null &&
-                schedule.getRepeat() != null &&
-                schedule.getIsOn() != null) {
+        if (schedule.getUid() != null && schedule.getHourTime() != null && schedule.getMinuteTime() != null && schedule.getRepeat() != null && schedule.getIsOn() != null) {
             userScheduleRepository.save(schedule);
             return SUCCESS;
         } else throw new Exception(DATA_NULL);
@@ -198,12 +200,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserScheduleEntity updateSchedule(UserScheduleEntity schedule) throws Exception {
-        if (schedule.getUid() != null &&
-                schedule.getId() != null &&
-                schedule.getHourTime() != null &&
-                schedule.getMinuteTime() != null &&
-                schedule.getRepeat() != null &&
-                schedule.getIsOn() != null) {
+        if (schedule.getUid() != null && schedule.getId() != null && schedule.getHourTime() != null && schedule.getMinuteTime() != null && schedule.getRepeat() != null && schedule.getIsOn() != null) {
             Optional<UserScheduleEntity> existSchedule = userScheduleRepository.findById(schedule.getId());
             if (existSchedule.isPresent()) {
                 existSchedule.get().setRepeat(schedule.getRepeat());
@@ -220,10 +217,94 @@ public class UserServiceImpl implements UserService {
     public String deleteSchedule(Long id) throws Exception {
         if (id != null) {
             Optional<UserScheduleEntity> existSchedule = userScheduleRepository.findById(id);
-            if (existSchedule.isPresent()){
+            if (existSchedule.isPresent()) {
                 userScheduleRepository.delete(existSchedule.get());
                 return SUCCESS;
             } else throw new Exception(NOT_EXIST);
         } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
+    public String sendContact(ContactEntity contact) throws Exception {
+        if (contact.getEnquiryId() != null && StringUtils.isNotBlank(contact.getContent())
+            && contact.getIsAdmin() != null){
+            Optional<UserContactEntity> existContact = userContactRepository.findById(contact.getEnquiryId());
+            if (existContact.isPresent()){
+                ContactEntity enquiry = new ContactEntity();
+                enquiry.setEnquiryId(contact.getId());
+                enquiry.setContent(contact.getContent());
+                LocalDateTime currentTime = LocalDateTime.now();
+                enquiry.setTime(currentTime);
+                enquiry.setIsAdmin(contact.getIsAdmin());
+                if (contact.getIsAdmin()){
+                    existContact.get().setStatus("Đã phản hồi");
+                } else {
+                    existContact.get().setStatus("Chưa phản hồi");
+                }
+                userContactRepository.save(existContact.get());
+                contactRepository.save(enquiry);
+                return SUCCESS;
+            } else throw new Exception(NOT_EXIST);
+        } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
+    public String deleteContact(Long id) throws Exception {
+        if (id != null){
+            Optional<UserContactEntity> existContact = userContactRepository.findById(id);
+            if (existContact.isPresent()){
+                userContactRepository.delete(existContact.get());
+                List<ContactEntity> listMessage = contactRepository.findByEnquiryId(id);
+                if (listMessage.isEmpty()) {
+                    throw new Exception(NOT_AVAILABLE);
+                } else {
+                    contactRepository.deleteAllInBatch(listMessage);
+                    return SUCCESS;
+                }
+            } throw new Exception(NOT_EXIST);
+        } throw new Exception(DATA_NULL);
+    }
+
+    @Override
+    public ContactRequest createContact(ContactRequest contact) throws Exception {
+        if (contact.getUid() != null && StringUtils.isNotBlank(contact.getContent())
+            && StringUtils.isNotBlank(contact.getTitle())) {
+            UserContactEntity newContact = new UserContactEntity();
+            ContactEntity enquiry = new ContactEntity();
+            newContact.setStatus("Mới");
+            newContact.setTitle(contact.getTitle());
+            LocalDateTime currentTime = LocalDateTime.now();
+            newContact.setCreateAt(currentTime);
+            newContact.setUid(contact.getUid());
+            newContact = userContactRepository.save(newContact);
+            contact.setEnquiryId(newContact.getId());
+            //
+            enquiry.setEnquiryId(newContact.getId());
+            enquiry.setContent(contact.getContent());
+            enquiry.setTime(currentTime);
+            enquiry.setIsAdmin(false);
+            contactRepository.save(enquiry);
+            return contact;
+        } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
+    public List<ContactEntity> getContactDetail(Long enquiryId) throws Exception {
+        if (enquiryId != null){
+                List<ContactEntity> listMessage = contactRepository.findByEnquiryId(enquiryId);
+                if (listMessage.isEmpty()) {
+                    throw new Exception(NOT_AVAILABLE);
+                } else {
+                    return listMessage;
+                }
+        } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
+    public List<UserContactEntity> getContacts() throws Exception {
+        List<UserContactEntity> listContact = userContactRepository.findAll();
+        if (listContact.isEmpty())
+            throw new Exception(NOT_EXIST);
+        else return listContact;
     }
 }

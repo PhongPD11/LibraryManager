@@ -1,10 +1,8 @@
 package com.example.librarymanager.Controller;
 
 import com.example.librarymanager.Commons.ResponseCommon;
-import com.example.librarymanager.DTOs.ApiResponse;
-import com.example.librarymanager.DTOs.Login;
-import com.example.librarymanager.DTOs.Profile;
-import com.example.librarymanager.DTOs.Register;
+import com.example.librarymanager.DTOs.*;
+import com.example.librarymanager.Entity.ContactEntity;
 import com.example.librarymanager.Entity.UserScheduleEntity;
 import com.example.librarymanager.Services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -102,6 +100,51 @@ public class UserController {
     public ApiResponse addSchedule(@RequestParam Long id) {
         try {
             return ResponseCommon.response(service.deleteSchedule(id), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
+    @PostMapping("/contact/send")
+    public ApiResponse sendContact(@RequestBody ContactEntity contact) {
+        try {
+            return ResponseCommon.response(service.sendContact(contact), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
+    @PostMapping("/contact/create")
+    public ApiResponse createContact(@RequestBody ContactRequest contact) {
+        try {
+            return ResponseCommon.response(service.createContact(contact), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/contact/delete")
+    public ApiResponse deleteContact(@RequestParam Long id) {
+        try {
+            return ResponseCommon.response(service.deleteContact(id), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
+    @GetMapping("/contact")
+    public ApiResponse getContacts() {
+        try {
+            return ResponseCommon.response(service.getContacts(), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
+    @GetMapping("/contact/detail")
+    public ApiResponse getContactDetail(@RequestParam Long id) {
+        try {
+            return ResponseCommon.response(service.getContactDetail(id), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }
