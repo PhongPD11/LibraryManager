@@ -11,12 +11,11 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Data
-@Table(name = "user_notification")
+@Table(name = "contact")
 public class ContactEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long uid;
     private LocalDateTime time;
     private String content;
     //enquiryId = id from user_contact

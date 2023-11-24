@@ -73,10 +73,11 @@ public class BookCommons {
         }
 
         List<AuthorBookEntity> listAuthorBook = authorBookRepository.findByBookId(book.getBookId());
-        ArrayList<String> listAuthor = new ArrayList<>();
+        ArrayList<AuthorEntity> listAuthor = new ArrayList<>();
         for (AuthorBookEntity authorBook : listAuthorBook) {
-            listAuthor.add(authorRepository.findByAuthorId(authorBook.getAuthorId()).getAuthorName());
+            listAuthor.add(authorRepository.findByAuthorId(authorBook.getAuthorId()));
         }
+        bookInfo.setId(book.getId());
 
 //        List<TypeBookEntity> listTypeBook = typeBookRepository.findByBookId(book.getBookId());
 //        ArrayList<String> listType = new ArrayList<>();

@@ -3,6 +3,7 @@ package com.example.librarymanager.Controller;
 import com.example.librarymanager.Commons.ResponseCommon;
 import com.example.librarymanager.DTOs.*;
 import com.example.librarymanager.Entity.ContactEntity;
+import com.example.librarymanager.Entity.UserContactEntity;
 import com.example.librarymanager.Entity.UserScheduleEntity;
 import com.example.librarymanager.Services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -104,11 +105,27 @@ public class UserController {
             return ResponseCommon.response(null, e.getMessage());
         }
     }
+    @GetMapping ("/schedule")
+    public ApiResponse getSchedule(@RequestParam Long uid) {
+        try {
+            return ResponseCommon.response(service.getScheduleByUid(uid), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
 
     @PostMapping("/contact/send")
     public ApiResponse sendContact(@RequestBody ContactEntity contact) {
         try {
             return ResponseCommon.response(service.sendContact(contact), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+    @PutMapping("/contact/status")
+    public ApiResponse changeContactStatus(@RequestBody UserContactEntity userContact) {
+        try {
+            return ResponseCommon.response(service.changeContactStatus(userContact), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }
@@ -140,11 +157,37 @@ public class UserController {
             return ResponseCommon.response(null, e.getMessage());
         }
     }
+    @GetMapping("/contact/user")
+    public ApiResponse getContacts(@RequestParam Long uid) {
+        try {
+            return ResponseCommon.response(service.getUserContacts(uid), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
 
     @GetMapping("/contact/detail")
-    public ApiResponse getContactDetail(@RequestParam Long id) {
+    public ApiResponse getContactDetail(@RequestParam Long enquiryId) {
         try {
-            return ResponseCommon.response(service.getContactDetail(id), "Success!");
+            return ResponseCommon.response(service.getContactDetail(enquiryId), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
+    @GetMapping("/users")
+    public ApiResponse getUsers() {
+        try {
+            return ResponseCommon.response(service.getUsers(), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
+    @PostMapping("/user/status")
+    public ApiResponse changeUserStatus(@RequestBody Profile user) {
+        try {
+            return ResponseCommon.response(service.changeStatus(user), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }

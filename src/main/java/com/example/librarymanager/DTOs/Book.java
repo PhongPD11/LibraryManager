@@ -1,5 +1,6 @@
 package com.example.librarymanager.DTOs;
 
+import com.example.librarymanager.Entity.AuthorEntity;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,10 +9,11 @@ import java.util.List;
 @Getter
 @Setter
 public class Book{
+    private Long id;
     private Long bookId;
     private String name;
     private Long amount;
-    private List<String> author;
+    private List<AuthorEntity> author;
 //    private List<String> type;
     private String type;
     private Double rated;

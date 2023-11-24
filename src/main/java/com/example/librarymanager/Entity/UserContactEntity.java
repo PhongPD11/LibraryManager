@@ -19,5 +19,6 @@ public class UserContactEntity {
     private Long uid;
     private LocalDateTime createAt;
     private String title;
+    private String content;
     private String status;
 }

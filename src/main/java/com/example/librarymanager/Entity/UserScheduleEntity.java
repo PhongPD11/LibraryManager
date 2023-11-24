@@ -19,5 +19,6 @@ public class UserScheduleEntity {
     private Long hourTime;
     private Long minuteTime;
     private Boolean isOn;
-    private Long repeat;
+    private String repeat;
+    private String typeRepeat;
 }

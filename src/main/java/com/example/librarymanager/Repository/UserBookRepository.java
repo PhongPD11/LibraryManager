@@ -31,6 +31,9 @@ public interface UserBookRepository extends JpaRepository<UserBookEntity, Long> 
     @Query(nativeQuery = true,value ="select * from user_book where status = 'registerBorrow' and DATE_PART('day', DATE_TRUNC('day', now()) - DATE_TRUNC('day', create_at)) > 3 order by create_at desc")
     List<UserBookEntity> getExpiredRegister();
 
+    @Query(nativeQuery = true, value = "SELECT * FROM user_book WHERE status IS NOT NULL AND status <> ''")
+    List<UserBookEntity> getUserBook();
+
     //Rating
     @Query(nativeQuery = true,value ="select count(*) from user_book where rate is not null and book_id = :bookId")
     Long getUserRate(@Param("bookId") Long bookId);

@@ -44,24 +44,30 @@ public class FcmServiceImpl implements FcmService {
                     } catch (FirebaseMessagingException ignored) {
                         System.out.println("Send FCM to User " + user.getUid() + " failure!");
                     }
-                    LocalDateTime currentTime = LocalDateTime.now();
-                    UserNotificationEntity saveNotify = new UserNotificationEntity();
-                    saveNotify.setUid(user.getUid());
-                    saveNotify.setContent(pnsRequest.getMessage());
-                    saveNotify.setTitle(pnsRequest.getTitle());
-                    saveNotify.setType(pnsRequest.getType().toString());
-                    saveNotify.setIsRead(false);
-                    saveNotify.setCreateAt(currentTime);
-                    userNotificationRepository.save(saveNotify);
                 }
             }
+            LocalDateTime currentTime = LocalDateTime.now();
+            UserNotificationEntity saveNotify = new UserNotificationEntity();
+            saveNotify.setContent(pnsRequest.getMessage());
+            saveNotify.setTitle(pnsRequest.getTitle());
+            saveNotify.setType(pnsRequest.getType());
+            saveNotify.setIsRead(false);
+            saveNotify.setCreateAt(currentTime);
+            saveNotify.setTo("Tất cả");
+
+            saveNotify = userNotificationRepository.save(saveNotify);
+            Long notifyId =  saveNotify.getId();
+            saveNotify.setNotifyId(notifyId);
+            userNotificationRepository.save(saveNotify);
         } else throw new Exception("Users dont exist");
         return SUCCESS;
     }
 
     @Override
-    public String sendNotifyToUser(UserNotify pnsRequest) throws Exception {
+    public StringBuilder sendNotifyToUser(UserNotify pnsRequest) throws Exception {
         if (pnsRequest.getListUid() != null) {
+            Long nid = -1L;
+            StringBuilder sendFail = new StringBuilder();
             for (Long uid : pnsRequest.getListUid()) {
                 Optional<UserEntity> user = Optional.ofNullable(userRepository.findByUid(uid));
                 if (user.isPresent()) {
@@ -81,13 +87,19 @@ public class FcmServiceImpl implements FcmService {
                         saveNotify.setUid(user.get().getUid());
                         saveNotify.setContent(pnsRequest.getMessage());
                         saveNotify.setTitle(pnsRequest.getTitle());
-                        saveNotify.setType(pnsRequest.getType().toString());
+                        saveNotify.setType(pnsRequest.getType());
                         saveNotify.setIsRead(false);
                         saveNotify.setCreateAt(currentTime);
+                        saveNotify.setTo("Tuỳ chọn");
+                        saveNotify = userNotificationRepository.save(saveNotify);
+                        if (nid < 0) {
+                            nid = saveNotify.getId();
+                        }
+                        saveNotify.setNotifyId(nid);
                         userNotificationRepository.save(saveNotify);
                     }
-                } else throw new Exception("Users dont exist");
-            } return SUCCESS;
+                } else sendFail.append(uid.toString()).append(" ");
+            } return sendFail;
         } else throw new Exception(DATA_NULL);
     }
 
@@ -148,5 +160,10 @@ public class FcmServiceImpl implements FcmService {
                 return SUCCESS;
             } else throw new Exception(USER_NOT_FOUND);
         } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
+    public List<UserNotificationEntity> getNotifications() throws Exception {
+        return userNotificationRepository.findAll();
     }
 }

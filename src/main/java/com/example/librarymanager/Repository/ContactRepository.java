@@ -8,7 +8,6 @@ import java.util.List;
 
 @Repository
 public interface ContactRepository extends JpaRepository<ContactEntity, Long> {
-    List<ContactEntity> findByUid(Long uid);
     List<ContactEntity> findByEnquiryId(Long enquiryId);
 
 }

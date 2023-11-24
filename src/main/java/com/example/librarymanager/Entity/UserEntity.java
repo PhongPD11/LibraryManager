@@ -32,4 +32,5 @@ public class UserEntity {
     //verify
     private Boolean isEnabled;
     private Long activeCode;
+    private String status;
 }

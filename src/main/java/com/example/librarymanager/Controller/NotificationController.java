@@ -55,6 +55,14 @@ public class NotificationController {
             return ResponseCommon.response(null, e.getMessage());
         }
     }
+    @GetMapping("/all")
+    public ApiResponse getNotifications() {
+        try {
+            return ResponseCommon.response(fcmService.getNotifications(), "Success" );
+        } catch (Exception e){
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
 
     @DeleteMapping("/delete")
     public ApiResponse userDeleteNotify(@RequestParam Long id) {

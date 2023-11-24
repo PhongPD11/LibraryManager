@@ -16,10 +16,12 @@ public class UserNotificationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private Long notifyId;
     private Long uid;
     private LocalDateTime createAt;
     private String title;
     private String content;
     private Boolean isRead;
     private String type;
+    private String to;
 }

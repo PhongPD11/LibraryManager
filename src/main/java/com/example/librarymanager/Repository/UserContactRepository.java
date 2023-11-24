@@ -9,5 +9,4 @@ import java.util.List;
 @Repository
 public interface UserContactRepository extends JpaRepository<UserContactEntity, Long> {
     List<UserContactEntity> findByUid(Long uid);
-
 }

@@ -57,12 +57,41 @@ public class BookController {
         } else return ResponseCommon.response(service.getAllBooks(), "Success!");
     }
 
+    @GetMapping("/authors")
+    public ApiResponse getAuthors() {
+        try {
+            return ResponseCommon.response(service.getAuthors(), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
     @PostMapping("/book")
-    public ApiResponse addBook(@RequestPart("model") String json, @RequestPart("file") MultipartFile file) {
+    public ApiResponse addBook(@RequestPart("model") String json, @RequestPart(value = "file", required = false) MultipartFile file) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             BookData dataModel = mapper.readValue(json, BookData.class);
             return ResponseCommon.response(service.addBook(dataModel, file), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
+//    @PutMapping("/book")
+//    public ApiResponse updateBook(@RequestBody BookData book) {
+//        try {
+//            return ResponseCommon.response(service.updateBook(book), "Success!");
+//        } catch (Exception e) {
+//            return ResponseCommon.response(null, e.getMessage());
+//        }
+//    }
+
+    @PutMapping("/book")
+    public ApiResponse updateBook(@RequestPart("model") String json, @RequestPart(value = "file", required = false) MultipartFile file) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            BookData dataModel = mapper.readValue(json, BookData.class);
+            return ResponseCommon.response(service.updateBook(dataModel, file), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }
@@ -86,14 +115,6 @@ public class BookController {
         }
     }
 
-    @PutMapping("/book")
-    public ApiResponse updateBook(@RequestBody BookData book) {
-        try {
-            return ResponseCommon.response(service.updateBook(book), "Success!");
-        } catch (Exception e) {
-            return ResponseCommon.response(null, e.getMessage());
-        }
-    }
 
     @DeleteMapping("/delete")
     public ApiResponse deleteBook(@RequestParam Long bookId) {
@@ -196,6 +217,15 @@ public class BookController {
     public ApiResponse getUserBook(@RequestParam Long uid) {
         try {
             return ResponseCommon.response(service.userBook(uid), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
+    @GetMapping("/user/all")
+    public ApiResponse getAllUserBook() {
+        try {
+            return ResponseCommon.response(service.getUserBook(), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }

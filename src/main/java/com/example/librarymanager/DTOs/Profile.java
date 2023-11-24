@@ -14,4 +14,5 @@ public class Profile {
     private String token;
     private String fcm;
     private String imageUrl;
+    private String status;
 }

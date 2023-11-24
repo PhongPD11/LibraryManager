@@ -7,11 +7,13 @@ import java.util.List;
 
 @Getter
 @Setter
-public class UserNotify {
-    private List<Long> listUid;
+public class AdminNotify {
     private String message;
     private String title;
     private String type;
+    private String to;
+    private Long notifyId;
+    private List<Long> user;
 }
 
 

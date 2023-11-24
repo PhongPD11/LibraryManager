@@ -11,7 +11,7 @@ import java.util.Date;
 @Slf4j
 public class JwtTokenProvider {
     private final String JWT_SECRET = "abcxyz";
-    private final Long JWT_EXPIRATION = 10000000L;
+    private final Long JWT_EXPIRATION = 7200000L;
 
     public String generateToken(UserEntity user){
         Date now = new Date();

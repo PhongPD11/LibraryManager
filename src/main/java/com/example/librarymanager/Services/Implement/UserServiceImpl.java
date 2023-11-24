@@ -121,6 +121,7 @@ public class UserServiceImpl implements UserService {
         if (user != null) {
             if (Objects.equals(user.getActiveCode(), activeCode)) {
                 user.setIsEnabled(true);
+                user.setStatus("Hoạt động");
                 user.setFcm(fcm);
                 userRepository.save(user);
                 return "Register successfully!";
@@ -192,23 +193,24 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public String addSchedule(UserScheduleEntity schedule) throws Exception {
-        if (schedule.getUid() != null && schedule.getHourTime() != null && schedule.getMinuteTime() != null && schedule.getRepeat() != null && schedule.getIsOn() != null) {
+        if (schedule.getUid() != null && schedule.getHourTime() != null && schedule.getMinuteTime() != null && schedule.getRepeat() != null && schedule.getIsOn() != null && StringUtils.isNotBlank(schedule.getTypeRepeat())) {
             userScheduleRepository.save(schedule);
             return SUCCESS;
         } else throw new Exception(DATA_NULL);
     }
 
     @Override
-    public UserScheduleEntity updateSchedule(UserScheduleEntity schedule) throws Exception {
-        if (schedule.getUid() != null && schedule.getId() != null && schedule.getHourTime() != null && schedule.getMinuteTime() != null && schedule.getRepeat() != null && schedule.getIsOn() != null) {
+    public String updateSchedule(UserScheduleEntity schedule) throws Exception {
+        if (schedule.getUid() != null && schedule.getId() != null && schedule.getHourTime() != null && schedule.getMinuteTime() != null && schedule.getRepeat() != null && schedule.getIsOn() != null && StringUtils.isNotBlank(schedule.getTypeRepeat())) {
             Optional<UserScheduleEntity> existSchedule = userScheduleRepository.findById(schedule.getId());
             if (existSchedule.isPresent()) {
                 existSchedule.get().setRepeat(schedule.getRepeat());
                 existSchedule.get().setHourTime(schedule.getHourTime());
                 existSchedule.get().setMinuteTime(schedule.getMinuteTime());
                 existSchedule.get().setIsOn(schedule.getIsOn());
+                existSchedule.get().setTypeRepeat(schedule.getTypeRepeat());
                 userScheduleRepository.save(existSchedule.get());
-                return existSchedule.get();
+                return SUCCESS;
             } else throw new Exception(NOT_EXIST);
         } else throw new Exception(DATA_NULL);
     }
@@ -225,18 +227,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<UserScheduleEntity> getScheduleByUid(Long uid) throws Exception {
+        if (uid != null) {
+            List<UserScheduleEntity> schedules = userScheduleRepository.findByUid(uid);
+            if (!schedules.isEmpty()){
+                return schedules;
+            } else throw new Exception(NOT_EXIST);
+        } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
     public String sendContact(ContactEntity contact) throws Exception {
         if (contact.getEnquiryId() != null && StringUtils.isNotBlank(contact.getContent())
-            && contact.getIsAdmin() != null){
+                && contact.getIsAdmin() != null) {
             Optional<UserContactEntity> existContact = userContactRepository.findById(contact.getEnquiryId());
-            if (existContact.isPresent()){
+            if (existContact.isPresent()) {
                 ContactEntity enquiry = new ContactEntity();
-                enquiry.setEnquiryId(contact.getId());
+                enquiry.setEnquiryId(contact.getEnquiryId());
                 enquiry.setContent(contact.getContent());
                 LocalDateTime currentTime = LocalDateTime.now();
                 enquiry.setTime(currentTime);
                 enquiry.setIsAdmin(contact.getIsAdmin());
-                if (contact.getIsAdmin()){
+                if (contact.getIsAdmin()) {
                     existContact.get().setStatus("Đã phản hồi");
                 } else {
                     existContact.get().setStatus("Chưa phản hồi");
@@ -249,10 +261,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public String changeContactStatus(UserContactEntity userContact) throws Exception {
+        if (userContact.getId() != null && StringUtils.isNotBlank(userContact.getStatus())) {
+            Optional<UserContactEntity> existContact = userContactRepository.findById(userContact.getId());
+            if (existContact.isPresent()) {
+                existContact.get().setStatus(userContact.getStatus());
+                userContactRepository.save(existContact.get());
+                return SUCCESS;
+            } else throw new Exception(NOT_EXIST);
+        } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
     public String deleteContact(Long id) throws Exception {
-        if (id != null){
+        if (id != null) {
             Optional<UserContactEntity> existContact = userContactRepository.findById(id);
-            if (existContact.isPresent()){
+            if (existContact.isPresent()) {
                 userContactRepository.delete(existContact.get());
                 List<ContactEntity> listMessage = contactRepository.findByEnquiryId(id);
                 if (listMessage.isEmpty()) {
@@ -261,20 +285,23 @@ public class UserServiceImpl implements UserService {
                     contactRepository.deleteAllInBatch(listMessage);
                     return SUCCESS;
                 }
-            } throw new Exception(NOT_EXIST);
-        } throw new Exception(DATA_NULL);
+            }
+            throw new Exception(NOT_EXIST);
+        }
+        throw new Exception(DATA_NULL);
     }
 
     @Override
-    public ContactRequest createContact(ContactRequest contact) throws Exception {
+    public String createContact(ContactRequest contact) throws Exception {
         if (contact.getUid() != null && StringUtils.isNotBlank(contact.getContent())
-            && StringUtils.isNotBlank(contact.getTitle())) {
+                && StringUtils.isNotBlank(contact.getTitle())) {
             UserContactEntity newContact = new UserContactEntity();
             ContactEntity enquiry = new ContactEntity();
             newContact.setStatus("Mới");
             newContact.setTitle(contact.getTitle());
             LocalDateTime currentTime = LocalDateTime.now();
             newContact.setCreateAt(currentTime);
+            newContact.setContent(contact.getContent());
             newContact.setUid(contact.getUid());
             newContact = userContactRepository.save(newContact);
             contact.setEnquiryId(newContact.getId());
@@ -284,19 +311,19 @@ public class UserServiceImpl implements UserService {
             enquiry.setTime(currentTime);
             enquiry.setIsAdmin(false);
             contactRepository.save(enquiry);
-            return contact;
+            return SUCCESS;
         } else throw new Exception(DATA_NULL);
     }
 
     @Override
     public List<ContactEntity> getContactDetail(Long enquiryId) throws Exception {
-        if (enquiryId != null){
-                List<ContactEntity> listMessage = contactRepository.findByEnquiryId(enquiryId);
-                if (listMessage.isEmpty()) {
-                    throw new Exception(NOT_AVAILABLE);
-                } else {
-                    return listMessage;
-                }
+        if (enquiryId != null) {
+            List<ContactEntity> listMessage = contactRepository.findByEnquiryId(enquiryId);
+            if (listMessage.isEmpty()) {
+                throw new Exception(NOT_AVAILABLE);
+            } else {
+                return listMessage;
+            }
         } else throw new Exception(DATA_NULL);
     }
 
@@ -307,4 +334,29 @@ public class UserServiceImpl implements UserService {
             throw new Exception(NOT_EXIST);
         else return listContact;
     }
+
+    @Override
+    public List<UserContactEntity> getUserContacts(Long uid) throws Exception {
+        if (uid != null) {
+            return userContactRepository.findByUid(uid);
+        } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
+    public List<UserEntity> getUsers() throws Exception {
+        return  userRepository.findAllByIsAdminAndIsEnabled(false, true);
+    }
+
+    @Override
+    public String changeStatus(Profile user) throws Exception {
+        if (user.getUid() != null && StringUtils.isNotBlank(user.getStatus())) {
+            Optional<UserEntity> existUser = Optional.ofNullable(userRepository.findByUid(user.getUid()));
+            if (existUser.isPresent()) {
+                existUser.get().setStatus(user.getStatus());
+                userRepository.save(existUser.get());
+                return user.getStatus();
+            } else throw new Exception(NOT_EXIST);
+        } else throw new Exception(DATA_NULL);
+    }
+
 }

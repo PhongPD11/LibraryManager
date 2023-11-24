@@ -48,6 +48,11 @@ public class BookServiceImpl implements BookService {
     UserBookRepository userBookRepository;
 
     @Override
+    public List<AuthorEntity> getAuthors() {
+        return authorRepository.findAll();
+    }
+
+    @Override
     public ArrayList<Book> getAllBooks() {
         Sort.Order order = new Sort.Order(Sort.Direction.ASC, "name");
         Sort sort = Sort.by(order);
@@ -322,9 +327,13 @@ public class BookServiceImpl implements BookService {
         } else throw new Exception(DATA_NULL);
     }
 
+    @Override
+    public List<UserBookEntity> getUserBook() throws Exception {
+        return userBookRepository.getUserBook();
+    }
 
     @Override
-    public BookData updateBook(BookData book) throws Exception {
+    public BookData updateBook(BookData book, MultipartFile file) throws Exception {
         Long id = book.getId();
         if (id != null) {
             if (bookRepository.findById(id).isPresent()) {
@@ -333,6 +342,7 @@ public class BookServiceImpl implements BookService {
                 String name = book.getName();
                 String major = book.getMajor();
                 String type = book.getType();
+                String status = book.getStatus();
                 String language = book.getLanguage();
                 Long amount = book.getAmount();
 
@@ -368,10 +378,23 @@ public class BookServiceImpl implements BookService {
                 } else {
                     existBook.setMajor(major);
                 }
+                if (StringUtils.isBlank(status)) {
+                    book.setStatus(existBook.getStatus());
+                } else {
+                    existBook.setStatus(status);
+                }
                 if (amount == null) {
                     book.setAmount(existBook.getAmount());
                 } else {
                     existBook.setAmount(amount);
+                }
+
+                if (file != null) {
+                    String url = Commons.uploadImage(file, "book_image/");
+                    if (StringUtils.isNotBlank(url)) {
+                        existBook.setImageUrl(url);
+                        book.setImageUrl(url);
+                    }
                 }
 
 //                typeBookRepository.deleteAll(typeBookRepository.findByBookId(bookIdExist));

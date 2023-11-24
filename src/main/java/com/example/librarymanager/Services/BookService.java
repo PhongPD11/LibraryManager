@@ -3,6 +3,7 @@ package com.example.librarymanager.Services;
 import com.example.librarymanager.DTOs.Book;
 import com.example.librarymanager.DTOs.BookData;
 import com.example.librarymanager.DTOs.BorrowBook;
+import com.example.librarymanager.Entity.AuthorEntity;
 import com.example.librarymanager.Entity.UserBookEntity;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -10,12 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public interface BookService {
+    List<AuthorEntity> getAuthors();
 
     ArrayList<Book> getAllBooks();
 
     BookData addBook(BookData book, MultipartFile file) throws Exception;
 
-    BookData updateBook(BookData book) throws Exception;
+    BookData updateBook(BookData book, MultipartFile file) throws Exception;
 
     String deleteBook(Long bookId) throws Exception;
 
@@ -38,4 +40,6 @@ public interface BookService {
     List<Book> favoriteBooks(Long uid) throws Exception;
     List<Book> topBooks() throws Exception;
     List<UserBookEntity> userBook(Long uid) throws Exception;
+
+    List<UserBookEntity> getUserBook() throws Exception;
 }

@@ -18,6 +18,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
@@ -38,12 +40,16 @@ public class Commons {
     public static final String UID_NULL = "uidNull";
     public static final String REGISTER_BORROW = "registerBorrow";
     public static final String BORROWING = "borrowing";
+    public static final String DELIVERING = "delivering";
     public static final String BORROW_RETURNED = "borrowReturned";
     public static final String BORROW_EXPIRED = "borrowExpired";
     public static final String BORROW_REGISTER_EXPIRED = "borrowRegisterExpired";
     public static final String INVALID = "invalid";
     public static final String EMPTY = "empty";
-    public static final String SDK_FIREBASE = "E:\\Demo BE\\LibraryManager\\src\\main\\resources\\library-3e026-firebase-adminsdk-krna8-619460d56d.json";
+    public static final String DAILY = "Daily";
+    public static final String ONCE = "Once";
+    public static final String CUSTOM = "Custom";
+    public static final String SDK_FIREBASE = "/Users/mac/work/LibraryManager/src/main/resources/library-3e026-firebase-adminsdk-krna8-619460d56d.json";
     public static final String BUCKET = "library-3e026.appspot.com";
     public static Boolean isNullOrEmpty(String object) {
         if (object == null) {
@@ -194,4 +200,26 @@ public class Commons {
     private static String generateFileName(MultipartFile multiPart) {
         return new Date().getTime() + "-" + Objects.requireNonNull(multiPart.getOriginalFilename()).replace(" ", "_");
     }
+
+    public static boolean isDesiredDayOfWeek(LocalDateTime dateTime, String repeat) {
+        DayOfWeek dayOfWeek = dateTime.getDayOfWeek();
+        switch (dayOfWeek) {
+            case MONDAY:
+                return repeat.charAt(0) == '1';
+            case TUESDAY:
+                return repeat.charAt(1) == '1';
+            case WEDNESDAY:
+                return repeat.charAt(2) == '1';
+            case THURSDAY:
+                return repeat.charAt(3) == '1';
+            case FRIDAY:
+                return repeat.charAt(4) == '1';
+            case SATURDAY:
+                return repeat.charAt(5) == '1';
+            case SUNDAY:
+                return repeat.charAt(6) == '1';
+            default: return false;
+        }
+    }
+
 }
