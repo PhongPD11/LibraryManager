@@ -1,9 +1,6 @@
 package com.example.librarymanager.Services;
 
-import com.example.librarymanager.DTOs.ContactRequest;
-import com.example.librarymanager.DTOs.Login;
-import com.example.librarymanager.DTOs.Profile;
-import com.example.librarymanager.DTOs.Register;
+import com.example.librarymanager.DTOs.*;
 import com.example.librarymanager.Entity.ContactEntity;
 import com.example.librarymanager.Entity.UserContactEntity;
 import com.example.librarymanager.Entity.UserEntity;
@@ -16,6 +13,7 @@ public interface UserService {
     public Profile login(Login login) throws Exception;
 
     public String register(Register register) throws Exception;
+    public String changePassword(ChangePass changePass) throws Exception;
 
     public String confirm(Long activeCode, String email, String fcm) throws Exception;
 

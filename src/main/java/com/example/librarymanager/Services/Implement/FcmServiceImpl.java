@@ -104,6 +104,40 @@ public class FcmServiceImpl implements FcmService {
     }
 
     @Override
+    public String sendWarningToUser(Long uid, String title, String content, String type) throws Exception {
+        if (uid != null) {
+                Optional<UserEntity> user = Optional.ofNullable(userRepository.findByUid(uid));
+                if (user.isPresent()) {
+                    if (StringUtils.isNotBlank(user.get().getFcm())) {
+                        Message message = Message.builder()
+                                .putData("title", title)
+                                .putData("message", content)
+                                .setToken(user.get().getFcm())
+                                .build();
+                        try {
+                            FirebaseMessaging.getInstance().send(message);
+                        } catch (FirebaseMessagingException ignored) {
+                            System.out.println("Send FCM to User " + user.get().getUid() + " failure!");
+                        }
+                        LocalDateTime currentTime = LocalDateTime.now();
+                        UserNotificationEntity saveNotify = new UserNotificationEntity();
+                        saveNotify.setUid(user.get().getUid());
+                        saveNotify.setContent(content);
+                        saveNotify.setTitle(title);
+                        saveNotify.setType(type);
+                        saveNotify.setIsRead(false);
+                        saveNotify.setCreateAt(currentTime);
+                        saveNotify.setTo("Tuỳ chọn");
+                        saveNotify = userNotificationRepository.save(saveNotify);
+                        saveNotify.setNotifyId(saveNotify.getId());
+                        userNotificationRepository.save(saveNotify);
+                        return SUCCESS;
+                    } else throw new Exception(DATA_NULL);
+                } else throw new Exception(USER_NOT_FOUND);
+        } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
     public String userRead(Long id) throws Exception {
         if (id != null) {
             Optional<UserNotificationEntity> notify = userNotificationRepository.findById(id);

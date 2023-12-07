@@ -190,7 +190,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public UserBookEntity borrowBook(Long bookId, Long uid) throws Exception {
+    public String borrowBook(Long bookId, Long uid) throws Exception {
         if (bookId != null && uid != null) {
             Optional<BookEntity> existBook = Optional.ofNullable(bookRepository.findByBookId(bookId));
             if (existBook.isPresent()) {
@@ -204,7 +204,7 @@ public class BookServiceImpl implements BookService {
                         existBorrow.get().setStatus(BORROWING);
                         userBookRepository.save(existBorrow.get());
                     }
-                    return existBorrow.get();
+                    return SUCCESS;
                 } else {
                     //Borrow directly
                     Long amount = existBook.get().getAmount();
@@ -219,7 +219,7 @@ public class BookServiceImpl implements BookService {
                         borrow.setExpireAt(expireTime);
                         borrow.setStatus(BORROWING);
                         userBookRepository.save(borrow);
-                        return borrow;
+                        return SUCCESS;
                     } else throw new Exception(NOT_AVAILABLE);
                 }
             } else throw new Exception(NOT_EXIST);
@@ -241,6 +241,18 @@ public class BookServiceImpl implements BookService {
                     bookRepository.save(existBook.get());
                     return SUCCESS;
                 } else throw new Exception("Book had returned");
+            } else throw new Exception(NOT_EXIST);
+        } else throw new Exception(DATA_NULL);
+    }
+
+    @Override
+    public String changeStatusUserBook(UserBookEntity userBook) throws Exception {
+        if (userBook.getId() != null && StringUtils.isNotBlank(userBook.getStatus())) {
+            Optional<UserBookEntity> existUserBook = userBookRepository.findById(userBook.getId());
+            if (existUserBook.isPresent()) {
+                existUserBook.get().setStatus(userBook.getStatus());
+                userBookRepository.save(existUserBook.get());
+                return SUCCESS;
             } else throw new Exception(NOT_EXIST);
         } else throw new Exception(DATA_NULL);
     }

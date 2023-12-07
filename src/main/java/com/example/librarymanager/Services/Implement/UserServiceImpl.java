@@ -1,10 +1,7 @@
 package com.example.librarymanager.Services.Implement;
 
 import com.example.librarymanager.Commons.Commons;
-import com.example.librarymanager.DTOs.ContactRequest;
-import com.example.librarymanager.DTOs.Login;
-import com.example.librarymanager.DTOs.Profile;
-import com.example.librarymanager.DTOs.Register;
+import com.example.librarymanager.DTOs.*;
 import com.example.librarymanager.Entity.ContactEntity;
 import com.example.librarymanager.Entity.UserContactEntity;
 import com.example.librarymanager.Entity.UserEntity;
@@ -89,7 +86,7 @@ public class UserServiceImpl implements UserService {
                         profile.setImageUrl(user.getImageUrl());
                         return profile;
                     } else throw new Exception(INVALID_PASSWORD);
-                } else throw new Exception("User is not verify.");
+                } else throw new Exception(NOT_VERIFY +",email: "+ user.getEmail());
             } else throw new Exception(USER_NOT_FOUND);
         }
     }
@@ -113,6 +110,26 @@ public class UserServiceImpl implements UserService {
                 return Commons.saveUser(userRepository, passwordEncoder, register, uid, mailSender);
             } else throw new Exception("Email is invalid!");
         }
+    }
+
+    @Override
+    public String changePassword(ChangePass changePass) throws Exception {
+        if (StringUtils.isNotBlank(changePass.getUsername()) &&
+                StringUtils.isNotBlank(changePass.getPassword()) &&
+                StringUtils.isNotBlank(changePass.getNewPassword())) {
+            Optional<UserEntity> user = Optional.ofNullable(userRepository.findByUsername(changePass.getUsername()));
+            if (user.isPresent()) {
+                if (user.get().getIsEnabled() || user.get().getIsAdmin()) {
+                    Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(changePass.getUsername(), changePass.getPassword()));
+                    if (authentication.isAuthenticated()) {
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        user.get().setPassword(changePass.getPassword());
+                        userRepository.save(user.get());
+                        return SUCCESS;
+                    } else throw new Exception("Wrong Password");
+                } else throw new Exception("Account has not been activated");
+            } else throw new Exception(NOT_EXIST);
+        } else throw new Exception(DATA_NULL);
     }
 
     @Override
@@ -152,6 +169,8 @@ public class UserServiceImpl implements UserService {
                 profile.setEmail(user.getEmail());
                 profile.setClassId(user.getClassId());
                 profile.setFullName(user.getFullName());
+                profile.setStatus(user.getStatus());
+                profile.setPenaltyCount(user.getPenaltyCount());
                 return profile;
             } else throw new Exception(USER_NOT_FOUND);
         } else throw new Exception(USER_NOT_FOUND);
@@ -230,7 +249,7 @@ public class UserServiceImpl implements UserService {
     public List<UserScheduleEntity> getScheduleByUid(Long uid) throws Exception {
         if (uid != null) {
             List<UserScheduleEntity> schedules = userScheduleRepository.findByUid(uid);
-            if (!schedules.isEmpty()){
+            if (!schedules.isEmpty()) {
                 return schedules;
             } else throw new Exception(NOT_EXIST);
         } else throw new Exception(DATA_NULL);
@@ -344,7 +363,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserEntity> getUsers() throws Exception {
-        return  userRepository.findAllByIsAdminAndIsEnabled(false, true);
+        return userRepository.findAllByIsAdminAndIsEnabled(false, true);
     }
 
     @Override

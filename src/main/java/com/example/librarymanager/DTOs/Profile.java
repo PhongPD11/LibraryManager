@@ -15,4 +15,5 @@ public class Profile {
     private String fcm;
     private String imageUrl;
     private String status;
+    private Long penaltyCount;
 }

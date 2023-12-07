@@ -38,6 +38,14 @@ public class UserController {
             return ResponseCommon.response(null, e.getMessage());
         }
     }
+    @PutMapping("/password")
+    public ApiResponse userRegistration(@RequestBody ChangePass changePass) {
+        try {
+            return ResponseCommon.response(service.changePassword(changePass), "Success");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
 
     @PostMapping("/change-device")
     public ApiResponse userRegistration(@RequestBody String fcm, @RequestBody Long uid) {

@@ -4,6 +4,7 @@ import com.example.librarymanager.Commons.ResponseCommon;
 import com.example.librarymanager.DTOs.ApiResponse;
 import com.example.librarymanager.DTOs.BookData;
 import com.example.librarymanager.DTOs.BorrowBook;
+import com.example.librarymanager.Entity.UserBookEntity;
 import com.example.librarymanager.Repository.BookRepository;
 import com.example.librarymanager.Services.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -172,6 +173,15 @@ public class BookController {
     public ApiResponse returnBook(@RequestParam Long bookId, Long uid) {
         try {
             return ResponseCommon.response(service.returnBook(bookId, uid), "Success!");
+        } catch (Exception e) {
+            return ResponseCommon.response(null, e.getMessage());
+        }
+    }
+
+    @PostMapping("/book/user/status")
+    public ApiResponse returnBook(@RequestBody UserBookEntity userBook) {
+        try {
+            return ResponseCommon.response(service.changeStatusUserBook(userBook), "Success!");
         } catch (Exception e) {
             return ResponseCommon.response(null, e.getMessage());
         }

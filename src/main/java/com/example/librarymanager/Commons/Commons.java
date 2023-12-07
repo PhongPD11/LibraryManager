@@ -36,6 +36,7 @@ public class Commons {
     public static final String DATA_NULL = "dataNull";
     public static final String INVALID_PASSWORD = "invalidPassword";
     public static final String USER_NOT_FOUND = "userNotFound";
+    public static final String NOT_VERIFY = "notVerify";
     public static final String SUCCESS = "success";
     public static final String UID_NULL = "uidNull";
     public static final String REGISTER_BORROW = "registerBorrow";
@@ -96,6 +97,7 @@ public class Commons {
         saveUser.setFullName(register.getFullName());
         saveUser.setClassId(register.getClassId());
         saveUser.setMajor(register.getMajor());
+        saveUser.setPenaltyCount(0L);
         Long code = Commons.randomActiveCode();
         saveUser.setActiveCode(code);
         saveUser.setIsEnabled(false);

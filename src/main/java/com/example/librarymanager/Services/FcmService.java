@@ -9,6 +9,7 @@ import java.util.List;
 public interface FcmService{
     String sendNotifyToAll(PnsRequest pnsRequest) throws Exception;
     StringBuilder sendNotifyToUser(UserNotify pnsRequest) throws Exception;
+    String sendWarningToUser(Long uid, String title, String content, String type) throws Exception;
     String userRead(Long id) throws Exception;
     Object getNotifyByUid(Long uid) throws Exception;
     String deleteNotify(Long id) throws Exception;

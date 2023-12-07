@@ -33,4 +33,6 @@ public class UserEntity {
     private Boolean isEnabled;
     private Long activeCode;
     private String status;
+    //penalty
+    private Long penaltyCount;
 }
