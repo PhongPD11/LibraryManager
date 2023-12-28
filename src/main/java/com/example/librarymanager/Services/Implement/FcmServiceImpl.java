@@ -32,6 +32,7 @@ public class FcmServiceImpl implements FcmService {
     public String sendNotifyToAll(PnsRequest pnsRequest) throws Exception {
         List<UserEntity> users = userRepository.findAll();
         if (!users.isEmpty()) {
+            Long id = -1L;
             for (UserEntity user : users) {
                 if (StringUtils.isNotBlank(user.getFcm())) {
                     Message message = Message.builder()
@@ -45,20 +46,25 @@ public class FcmServiceImpl implements FcmService {
                         System.out.println("Send FCM to User " + user.getUid() + " failure!");
                     }
                 }
-            }
-            LocalDateTime currentTime = LocalDateTime.now();
-            UserNotificationEntity saveNotify = new UserNotificationEntity();
-            saveNotify.setContent(pnsRequest.getMessage());
-            saveNotify.setTitle(pnsRequest.getTitle());
-            saveNotify.setType(pnsRequest.getType());
-            saveNotify.setIsRead(false);
-            saveNotify.setCreateAt(currentTime);
-            saveNotify.setTo("Tất cả");
 
-            saveNotify = userNotificationRepository.save(saveNotify);
-            Long notifyId =  saveNotify.getId();
-            saveNotify.setNotifyId(notifyId);
-            userNotificationRepository.save(saveNotify);
+                LocalDateTime currentTime = LocalDateTime.now();
+                UserNotificationEntity saveNotify = new UserNotificationEntity();
+                saveNotify.setContent(pnsRequest.getMessage());
+                saveNotify.setTitle(pnsRequest.getTitle());
+                saveNotify.setType(pnsRequest.getType());
+                saveNotify.setIsRead(false);
+                saveNotify.setCreateAt(currentTime);
+                saveNotify.setUid(user.getUid());
+                saveNotify.setTo("Tất cả");
+
+                saveNotify = userNotificationRepository.save(saveNotify);
+                if (id < 0L) {
+                    id =  saveNotify.getId();
+                }
+                saveNotify.setNotifyId(id);
+                userNotificationRepository.save(saveNotify);
+            }
+
         } else throw new Exception("Users dont exist");
         return SUCCESS;
     }

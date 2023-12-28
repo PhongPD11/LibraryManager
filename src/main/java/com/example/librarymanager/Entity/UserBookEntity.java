@@ -27,4 +27,5 @@ public class UserBookEntity {
     private Boolean isFavorite;
     private Boolean isDelivery;
     private String address;
+    private String phoneNumber;
 }

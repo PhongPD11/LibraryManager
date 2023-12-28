@@ -47,6 +47,9 @@ public class BookServiceImpl implements BookService {
     @Autowired
     UserBookRepository userBookRepository;
 
+    @Autowired
+    UserRepository userRepository;
+
     @Override
     public List<AuthorEntity> getAuthors() {
         return authorRepository.findAll();
@@ -64,7 +67,7 @@ public class BookServiceImpl implements BookService {
     public BookData addBook(BookData book, MultipartFile file) throws Exception {
         BookEntity saveBook = new BookEntity();
         if (StringUtils.isBlank(book.getName()) || book.getBookId() == null ||
-                StringUtils.isBlank(book.getName()) || StringUtils.isBlank(book.getName()) ||
+                StringUtils.isBlank(book.getName()) ||
                 StringUtils.isBlank(book.getLanguage()) || StringUtils.isBlank(book.getType()) ||
                 StringUtils.isBlank(book.getMajor()) || ObjectUtils.isEmpty(book.getAuthor()) ||
                 StringUtils.isBlank(book.getDdc()) || book.getPublicationYear() == null ||
@@ -155,8 +158,9 @@ public class BookServiceImpl implements BookService {
                             reBorrow.setUid(uid);
                             reBorrow.setIsDelivery(borrow.getIsDelivery());
                             if (borrow.getIsDelivery()) {
-                                if (StringUtils.isNotBlank(borrow.getAddress())) {
+                                if (StringUtils.isNotBlank(borrow.getAddress()) && StringUtils.isNotBlank(borrow.getPhoneNumber()) ) {
                                     reBorrow.setAddress(borrow.getAddress());
+                                    reBorrow.setPhoneNumber(borrow.getPhoneNumber());
                                 } else throw new Exception(DATA_NULL);
                             }
                             LocalDateTime currentTime = LocalDateTime.now();
@@ -173,9 +177,10 @@ public class BookServiceImpl implements BookService {
                         newBorrow.setBookId(bookId);
                         newBorrow.setUid(uid);
                         newBorrow.setIsDelivery(borrow.getIsDelivery());
-                        if (borrow.getIsDelivery()) {
+                        if (borrow.getIsDelivery() && StringUtils.isNotBlank(borrow.getPhoneNumber())) {
                             if (StringUtils.isNotBlank(borrow.getAddress())) {
                                 newBorrow.setAddress(borrow.getAddress());
+                                newBorrow.setPhoneNumber(borrow.getPhoneNumber());
                             } else throw new Exception(DATA_NULL);
                         }
                         LocalDateTime currentTime = LocalDateTime.now();
@@ -249,7 +254,34 @@ public class BookServiceImpl implements BookService {
     public String changeStatusUserBook(UserBookEntity userBook) throws Exception {
         if (userBook.getId() != null && StringUtils.isNotBlank(userBook.getStatus())) {
             Optional<UserBookEntity> existUserBook = userBookRepository.findById(userBook.getId());
-            if (existUserBook.isPresent()) {
+            Optional<BookEntity> existBook = Optional.ofNullable(bookRepository.findByBookId(userBook.getBookId()));
+            if (existUserBook.isPresent() && existBook.isPresent()) {
+                LocalDateTime currentTime = LocalDateTime.now();
+                LocalDateTime expireTime = currentTime.plusDays(existBook.get().getBorrowingPeriod());
+
+                switch (userBook.getStatus()) {
+                    case DELIVERING:
+                        existUserBook.get().setCreatedAt(currentTime);
+                        existUserBook.get().setExpireAt(expireTime);
+                        break;
+                    case BORROW_RETURNED:
+                        existUserBook.get().setReturnedAt(currentTime);
+                        existBook.get().setAmount(existBook.get().getAmount() + 1L);
+                        bookRepository.save(existBook.get());
+                        break;
+                    case BORROW_REGISTER_EXPIRED:
+                        existBook.get().setAmount(existBook.get().getAmount() + 1L);
+                        bookRepository.save(existBook.get());
+                        Optional<UserEntity> user = Optional.ofNullable(userRepository.findByUid(existUserBook.get().getUid()));
+                        if (user.isPresent()) {
+                            user.get().setPenaltyCount(user.get().getPenaltyCount() + 1L);
+                            userRepository.save(user.get());
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
                 existUserBook.get().setStatus(userBook.getStatus());
                 userBookRepository.save(existUserBook.get());
                 return SUCCESS;
@@ -316,7 +348,9 @@ public class BookServiceImpl implements BookService {
                         BookEntity bookExist = bookRepository.findByBookId(bookId);
                         if (bookExist != null) {
                             favoriteBooks.add(bookExist);
-                        } else throw new Exception(BOOK_NOT_FOUND);
+                        } else {
+                            System.out.println("Book id fail" + bookId);
+                        }
                     }
                 }
                 return BookCommons.showBooksInfo(favoriteBooks, authorBookRepository, authorRepository, userBookRepository);
@@ -378,12 +412,12 @@ public class BookServiceImpl implements BookService {
                 if (StringUtils.isBlank(language)) {
                     book.setLanguage(existBook.getLanguage());
                 } else {
-                    existBook.setName(language);
+                    existBook.setLanguage(language);
                 }
                 if (StringUtils.isBlank(type)) {
                     book.setType(existBook.getType());
                 } else {
-                    existBook.setName(type);
+                    existBook.setType(type);
                 }
                 if (StringUtils.isBlank(major)) {
                     book.setMajor(existBook.getMajor());

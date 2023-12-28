@@ -59,7 +59,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and().authorizeRequests()
                 .antMatchers("/login", "/register", "/change-device", "/verify", "/email").permitAll()
                 .antMatchers(
-                        "/library/test", "/notification/all",  "/notification/user", "/notification/delete", "/library/books", "/library/books/author","/library/authors", "/profile",
+                        "/library/test", "/notification/all","/notification",  "/notification/user", "/notification/delete", "/library/books", "/library/books/author","/library/authors", "/profile",
                         "/library/favorites", "/library/favorite", "/library/userbook", "/notification/read", "/notification/fcm", "/library/rate", "/password",
                         "/library/borrow/register", "/library/books/top", "/schedule", "/contact/create", "/contact/send", "/contact/user", "/contact/detail"
                 )

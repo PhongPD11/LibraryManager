@@ -9,6 +9,8 @@ import java.util.List;
 @Repository
 public interface UserNotificationRepository extends JpaRepository<UserNotificationEntity, Long> {
     List<UserNotificationEntity> findByUid(Long uid);
+
+    List<UserNotificationEntity> findByTo(String to);
     List<UserNotificationEntity> findByTitle(String title);
 
 }

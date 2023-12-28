@@ -3,7 +3,6 @@ package com.example.librarymanager.Controller;
 import com.example.librarymanager.Commons.ResponseCommon;
 import com.example.librarymanager.DTOs.*;
 import com.example.librarymanager.Entity.ContactEntity;
-import com.example.librarymanager.Entity.UserContactEntity;
 import com.example.librarymanager.Entity.UserScheduleEntity;
 import com.example.librarymanager.Services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -131,7 +130,7 @@ public class UserController {
         }
     }
     @PutMapping("/contact/status")
-    public ApiResponse changeContactStatus(@RequestBody UserContactEntity userContact) {
+    public ApiResponse changeContactStatus(@RequestBody ContactStatus userContact) {
         try {
             return ResponseCommon.response(service.changeContactStatus(userContact), "Success!");
         } catch (Exception e) {

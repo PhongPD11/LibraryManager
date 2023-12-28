@@ -34,7 +34,7 @@ public interface UserService {
     public List<UserScheduleEntity> getScheduleByUid(Long uid) throws Exception;
 
     public String sendContact(ContactEntity contact) throws Exception;
-    public String changeContactStatus(UserContactEntity userContact) throws Exception;
+    public String changeContactStatus(ContactStatus contactStatus) throws Exception;
 
     public String deleteContact(Long id) throws Exception;
 

@@ -10,4 +10,5 @@ public class BorrowBook {
     private Long bookId;
     private String address;
     private Boolean isDelivery;
+    private String phoneNumber;
 }

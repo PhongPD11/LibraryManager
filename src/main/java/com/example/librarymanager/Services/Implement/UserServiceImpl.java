@@ -280,11 +280,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String changeContactStatus(UserContactEntity userContact) throws Exception {
-        if (userContact.getId() != null && StringUtils.isNotBlank(userContact.getStatus())) {
-            Optional<UserContactEntity> existContact = userContactRepository.findById(userContact.getId());
+    public String changeContactStatus(ContactStatus contact) throws Exception {
+        if (contact.getId() != null && StringUtils.isNotBlank(contact.getStatus())) {
+            Optional<UserContactEntity> existContact = userContactRepository.findById(contact.getId());
             if (existContact.isPresent()) {
-                existContact.get().setStatus(userContact.getStatus());
+                existContact.get().setStatus(contact.getStatus());
                 userContactRepository.save(existContact.get());
                 return SUCCESS;
             } else throw new Exception(NOT_EXIST);

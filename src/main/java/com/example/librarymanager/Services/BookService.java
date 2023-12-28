@@ -18,7 +18,6 @@ public interface BookService {
     BookData addBook(BookData book, MultipartFile file) throws Exception;
 
     BookData updateBook(BookData book, MultipartFile file) throws Exception;
-
     String deleteBook(Long bookId) throws Exception;
 
     ArrayList<Book> getBookByAuthor(String authorName, Long authorId) throws Exception;
